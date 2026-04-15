@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/LoadingMenu/LoadingScreen.unity
     guid: 7dc11719bb7cbe34b8c3c2964621b5f3
+  - enabled: 1
+    path: Assets/Scenes/theSpoopMachine_FPm04.unity
+    guid: b7e26e5aff113d7418fa9acf23cbf000
   m_configObjects: {}

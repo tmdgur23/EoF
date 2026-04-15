@@ -25,11 +25,6 @@ namespace Units.General
 
 		public static int CalculateSoul(int amount, Unit unit)
 		{
-			if (amount > 0)
-			{
-				return amount;
-			}
-
 			return Mathf.RoundToInt((amount * (1 + unit.SoulMultiplier)));
 		}
 
