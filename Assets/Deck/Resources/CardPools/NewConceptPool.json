@@ -1,0 +1,114 @@
+{
+  "Name": "NewConceptPool",
+  "Id": 99,
+  "Cards": [
+    {
+      "Name": "PowerStrike: Type1", "Id": 301, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 1, "Description": "a powerstrike card 1", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[23, {"BaseAmount": 3, "MinRoll": 1, "MaxRoll": 6, "RollType": 1, "CustomTarget": 1, "Lens": [0, {}]}]]
+    },
+    {
+      "Name": "PowerStrike: Type2", "Id": 302, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconDefend", "VFXIndex": 0, "Energy": 1, "Description": "a powerstrike card 2", "Rarity": 0, "Type": 1, "TargetType": 0, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[23, {"MinRoll": 6, "MaxRoll": 12, "RollType": 2, "CustomTarget": 0, "Lens": [1, {}]}]]
+    },
+    {
+      "Name": "PowerStrike: Type3", "Id": 303, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 2, "Description": "a powerstrike card 3", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[23, {"MinRoll": 2, "MaxRoll": 5, "RollType": 3, "CustomTarget": 1, "Lens": [0, {}]}]]
+    },
+    {
+      "Name": "Bleed: Type1", "Id": 304, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 1, "Description": "Apply 3 Bleeding.\nDraw 1 card.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[19, {"Amount": 3}], [10, {"Amount": 1}]]
+    },
+    {
+      "Name": "Bleed: Type2", "Id": 305, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 2, "Description": "Roll (1~6).\nApply Bleeding equal to the roll.\nDeal Damage equal to the roll.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[23, {"BaseAmount": 0, "MinRoll": 1, "MaxRoll": 6, "RollType": 4, "CustomTarget": 1, "TargetStatus": [23, {"Name": "Bleeding"}], "Lens": [0, {}]}]]
+    },
+    {
+      "Name": "Bleed: Type3", "Id": 306, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 1, "Description": "Gain Defense equal to the target's Bleeding stacks.", "Rarity": 0, "Type": 1, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[6, {"Defense": 0, "CustomTarget": 0, "Lens": [8, {"TargetStatus": [23, {"Name": "Bleeding"}], "Multiplier": 100}]}]]
+    },
+    {
+      "Name": "MultiHit: Type1", "Id": 307, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 0, "Description": "Deal 3 Damage.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[8, {"Damage": 3, "CustomTarget": 1, "Lens": [0, {}]}]]
+    },
+    {
+      "Name": "MultiHit: Type2", "Id": 308, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 2, "Description": "Roll (2~5).\nDeal Damage equal to the roll 3 times.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[23, {"MinRoll": 2, "MaxRoll": 5, "Repetitions": 3, "RollType": 1, "CustomTarget": 1, "Lens": [0, {}]}]]
+    },
+    {
+      "Name": "MultiHit: Type3", "Id": 309, "Illustration": "Cards/Illustration/StrikeCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 3, "Description": "Deal 4 Damage for each Attack card played this turn.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[8, {"Damage": 0, "CustomTarget": 1, "Lens": [7, {"CardType": 0, "Multiplier": 400, "Default": [0, {}]}]}]]
+    },
+    {
+      "Name": "Analysis: Type1", "Id": 310, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 1, "Description": "Apply 2 Vulnerable.\nGain 1 Energy next turn.", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [9, {"Name": "Vulnerability", "Percentage": 50}], "Count": 2, "CustomTarget": 1}], [4, {"Status": [24, {"Name": "Energized"}], "Count": 1}]]
+    },
+    {
+      "Name": "Analysis: Type2", "Id": 311, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 1, "Description": "Deal 5 Damage.\nIf target is Vulnerable, roll (1~6) additional Damage and gain 1 Energy.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[8, {"Damage": 5, "CustomTarget": 1, "Lens": [0, {}]}], [25, {"TargetStatus": [9, {"Name": "Vulnerability"}], "EffectToExecute": [23, {"MinRoll": 1, "MaxRoll": 6, "RollType": 1, "CustomTarget": 1, "Lens": [0, {}]}]}], [25, {"TargetStatus": [9, {"Name": "Vulnerability"}], "EffectToExecute": [24, {"Amount": 1}]}]]
+    },
+    {
+      "Name": "Analysis: Type3", "Id": 312, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 2, "Description": "Apply 2 Vulnerable.\nDraw 1 card.\nGain 2 Energy next turn.", "Rarity": 0, "Type": 1, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [9, {"Name": "Vulnerability", "Percentage": 50}], "Count": 2, "CustomTarget": 1}], [10, {"Amount": 1}], [4, {"Status": [24, {"Name": "Energized"}], "Count": 2}]]
+    },
+    {
+      "Name": "Amplify: Type1", "Id": 313, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 2, "Description": "Gain 10 Defense.\nDouble the target's next Soul interaction.", "Rarity": 0, "Type": 3, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[6, {"Defense": 10}], [4, {"Status": [28, {"Name": "SoulAmplify"}], "Count": 1, "CustomTarget": 1}]]
+    },
+    {
+      "Name": "Amplify: Type2", "Id": 314, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 1, "Description": "Damage of all cards is increased by 2 this turn.\nDraw 1 card.", "Rarity": 0, "Type": 3, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [27, {"Name": "TemporaryMight", "Amount": 2}], "Count": 1, "CustomTarget": 0}], [10, {"Amount": 1}]]
+    },
+    {
+      "Name": "Amplify: Type3", "Id": 315, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 2, "Description": "Draw 2 cards.\nDice (2~5): Increase your next attack's damage by the result.", "Rarity": 0, "Type": 3, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[10, {"Amount": 2}], [23, {"MinRoll": 2, "MaxRoll": 5, "RollType": 8, "TargetStatus": [29, {"Name": "NextAttackBonus"}], "CustomTarget": 0}]]
+    },
+    {
+      "Name": "Debuff: Type1", "Id": 316, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 1, "Description": "Apply 3 Weakness.\nDraw 1 card.\nDice (1~6): If 4+, Target Soul +3.", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [25, {"Name": "Weakness"}], "Count": 3, "CustomTarget": 1}], [10, {"Amount": 1}], [23, {"MinRoll": 1, "MaxRoll": 6, "RollType": 7, "SuccessThreshold": 4, "SuccessEffect": [7, {"Soul": 3, "CustomTarget": 1}]}]]
+    },
+    {
+      "Name": "Debuff: Type2", "Id": 317, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 2, "Description": "Decrease enemy Attack by 3 this turn.\nDice (3~6): Gain result Soul and Target Soul +result.", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [27, {"Name": "TemporaryMight", "Amount": -3}], "Count": 1, "CustomTarget": 1}], [23, {"MinRoll": 3, "MaxRoll": 6, "RollType": 6}]]
+    },
+    {
+      "Name": "Debuff: Type3", "Id": 318, "Illustration": "Cards/Illustration/FirstAidCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 3, "Description": "Stun enemy for 1 turn.\nTarget Soul +10.", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [26, {"Name": "Stun"}], "Count": 1, "CustomTarget": 1}], [7, {"Soul": 10, "CustomTarget": 1}]]
+    },
+    {
+      "Name": "Convert: Type1", "Id": 319, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 1, "Description": "Roll (1~6).\nApply Damage, Defense, or Soul randomly equal to the roll.\n(Damage/Soul target is random)", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[26, {"MinRoll": 1, "MaxRoll": 6}]]
+    },
+    {
+      "Name": "Convert: Type2", "Id": 320, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 1, "Description": "Roll (1~6).\nApply Damage or Soul randomly (Roll x 2) times.\n(Damage/Soul target is random)", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[27, {"MinRoll": 1, "MaxRoll": 6}]]
+    },
+    {
+      "Name": "Convert: Type3", "Id": 321, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconPrayer", "VFXIndex": 0, "Energy": 2, "Description": "Roll (12~18).\nDistribute result randomly into Damage & Defense.\n(Damage target is random)", "Rarity": 0, "Type": 2, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[28, {"MinRoll": 12, "MaxRoll": 18}]]
+    },
+    {
+      "Name": "Madness: Type1", "Id": 322, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 0, "Description": "Roll (1~6).\nDeal Damage equal to the roll.\nIf roll is 2 or less, take 3 damage.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[29, {"MinRoll": 1, "MaxRoll": 6}]]
+    },
+    {
+      "Name": "Madness: Type2", "Id": 323, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 1, "Description": "Roll (1~6).\nTarget Soul +Roll.\nIf roll is 3 or less, Your Soul -3.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[30, {"MinRoll": 1, "MaxRoll": 6}]]
+    },
+    {
+      "Name": "Madness: Type3", "Id": 324, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconAttack", "VFXIndex": 0, "Energy": 3, "Description": "Roll (1~6) and multiply by another 1~6 roll.\nDeal Damage equal to the result.\nTake damage equal to DealDamage/3.", "Rarity": 0, "Type": 0, "TargetType": 1, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[31, {"MinRoll": 1, "MaxRoll": 6}]]
+    },
+    {
+      "Name": "Fate: Type1", "Id": 325, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 1, "Description": "The next dice rolled will have the maximum possible value.", "Rarity": 0, "Type": 3, "TargetType": 0, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [30, {"Name": "Guaranteed Max Roll"}], "Count": 1, "CustomTarget": 0}]]
+    },
+    {
+      "Name": "Fate: Type2", "Id": 326, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 1, "Description": "The next dice rolled will have its Min and Max values increased by 5.", "Rarity": 0, "Type": 3, "TargetType": 0, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [31, {"Name": "Roll Boost +5"}], "Count": 1, "CustomTarget": 0}]]
+    },
+    {
+      "Name": "Fate: Type3", "Id": 327, "Illustration": "Cards/Illustration/UnholyPerseveranceCard", "Icon": "Cards/Icons/IconBlessing", "VFXIndex": 0, "Energy": 1, "Description": "The effect of the next dice rolled is applied twice.", "Rarity": 0, "Type": 3, "TargetType": 0, "EarlyEffects": [], "PlayCondition": [], "DiscardCondition": [],
+      "PlayEffect": [[4, {"Status": [32, {"Name": "Double Roll Output"}], "Count": 1, "CustomTarget": 0}]]
+    }
+  ]
+}
