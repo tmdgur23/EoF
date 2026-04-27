@@ -35,10 +35,73 @@ public class DiceSystem : MonoBehaviour
     
     private CanvasGroup canvasGroup;
 
+    public static DiceSystem Instance { get; private set; }
+
+    private static GameObject leftDiceObj;
+    private static GameObject rightDiceObj;
+    private static GameObject centerDiceObj;
+    private static TextMeshProUGUI leftDiceText;
+    private static TextMeshProUGUI rightDiceText;
+    private static TextMeshProUGUI centerDiceText;
+
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+        Instance = this;
+
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        SetupDiceObjects();
+    }
+
+    private void SetupDiceObjects()
+    {
+        var parent = transform.parent;
+        if (parent != null)
+        {
+            var leftTransform = parent.Find("DiceImage");
+            if (leftTransform != null)
+            {
+                leftDiceObj = leftTransform.gameObject;
+                leftDiceText = leftDiceObj.GetComponentInChildren<TextMeshProUGUI>();
+            }
+
+            var rightTransform = parent.Find("DiceImage2");
+            if (rightTransform != null)
+            {
+                rightDiceObj = rightTransform.gameObject;
+                rightDiceText = rightDiceObj.GetComponentInChildren<TextMeshProUGUI>();
+            }
+
+            var centerTransform = parent.Find("DiceImageCenter");
+            if (centerTransform == null && leftDiceObj != null)
+            {
+                centerDiceObj = Instantiate(leftDiceObj, parent);
+                centerDiceObj.name = "DiceImageCenter";
+                var rect = centerDiceObj.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.anchoredPosition = new Vector2(0, 0);
+                }
+                centerDiceText = centerDiceObj.GetComponentInChildren<TextMeshProUGUI>();
+                if (centerDiceText != null)
+                {
+                    centerDiceText.text = "";
+                }
+
+                var ds = centerDiceObj.GetComponent<DiceSystem>();
+                if (ds != null) Destroy(ds);
+            }
+            else if (centerTransform != null)
+            {
+                centerDiceObj = centerTransform.gameObject;
+                centerDiceText = centerDiceObj.GetComponentInChildren<TextMeshProUGUI>();
+            }
+        }
     }
 
     private void Start()
@@ -46,13 +109,53 @@ public class DiceSystem : MonoBehaviour
         ToggleUI(false);
     }
 
+    private void SetDiceVisibility(GameObject obj, bool visible)
+    {
+        if (obj == null) return;
+
+        var imgs = obj.GetComponentsInChildren<UnityEngine.UI.Image>(true);
+        foreach (var img in imgs)
+        {
+            img.enabled = visible;
+        }
+
+        var txts = obj.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (var txt in txts)
+        {
+            txt.enabled = visible;
+        }
+    }
+
     private void ToggleUI(bool active)
     {
-        if (canvasGroup != null)
+        if (leftDiceObj == null) SetupDiceObjects();
+
+        bool isMadness3 = false;
+        if (currentRoll != null && currentRoll.Effect != null)
         {
-            canvasGroup.alpha = active ? 1f : 0f;
-            canvasGroup.interactable = active;
-            canvasGroup.blocksRaycasts = active;
+            isMadness3 = currentRoll.Effect is MadnessType3Effect || currentRoll.Effect.GetType().Name == "MadnessType3SecondRollEffect";
+        }
+
+        if (!active)
+        {
+            SetDiceVisibility(leftDiceObj, false);
+            SetDiceVisibility(rightDiceObj, false);
+            SetDiceVisibility(centerDiceObj, false);
+        }
+        else
+        {
+            if (isMadness3)
+            {
+                SetDiceVisibility(leftDiceObj, true);
+                SetDiceVisibility(rightDiceObj, true);
+                SetDiceVisibility(centerDiceObj, false);
+            }
+            else
+            {
+                SetDiceVisibility(leftDiceObj, false);
+                SetDiceVisibility(rightDiceObj, false);
+                SetDiceVisibility(centerDiceObj, true);
+            }
         }
 
         if (rerollBtnObj == null)
@@ -113,6 +216,24 @@ public class DiceSystem : MonoBehaviour
     public void StartRoll()
     {
         if (currentRoll == null) return;
+
+        if (leftDiceObj == null) SetupDiceObjects();
+
+        bool isMadness3Effect = currentRoll.Effect is MadnessType3Effect;
+        bool isMadness3Second = currentRoll.Effect != null && currentRoll.Effect.GetType().Name == "MadnessType3SecondRollEffect";
+
+        if (isMadness3Effect)
+        {
+            diceText = leftDiceText;
+        }
+        else if (isMadness3Second)
+        {
+            diceText = rightDiceText;
+        }
+        else
+        {
+            diceText = centerDiceText;
+        }
 
         isRolling = true;
         isWaitingForInput = false;

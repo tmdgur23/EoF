@@ -1,6 +1,8 @@
 using UnityEngine;
 using OptionMenu;
 using Utilities;
+using Deck;
+using Units.Player.General;
 
 namespace MainScene
 {
@@ -45,6 +47,21 @@ namespace MainScene
             {
                 PersistentData.Save(starterData, Battle.General.Constants.PlayerDeckIdentifier);
                 Debug.Log("[ResetGameProgress] Deck reset to Starter Deck successfully.");
+
+                // 4. Update the active Player instance's deck in memory!
+                var player = Object.FindObjectOfType<Units.Player.General.Player>();
+                if (player != null && player.CardDeck != null)
+                {
+                    player.CardDeck.Clear();
+                    
+                    // Re-build deck from starter data
+                    var rebuiltDeck = DeckFactory.Build(starterData, player);
+                    foreach (var card in rebuiltDeck.GetAll())
+                    {
+                        player.CardDeck.Add(card);
+                    }
+                    Debug.Log("[ResetGameProgress] Active Player's memory deck has been reset.");
+                }
             }
             else
             {
