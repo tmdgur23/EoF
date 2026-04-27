@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0955f7a6bb4969b62627c41049688c, type: 3}
+  m_Name: EncounterTemplateCollection
+  m_EditorClassIdentifier: 
+  EncounterData:
+  - Name: Hound
+    Enemies:
+    - {fileID: 7423276695488492593, guid: e637a2299fde6764da73e0bc15ca1719, type: 3}
+  - Name: Imp
+    Enemies:
+    - {fileID: 1127444721174595985, guid: f7038dae552ffe844823fa30522f2da2, type: 3}
+  - Name: BrokenSeal
+    Enemies:
+    - {fileID: 4305390450424797530, guid: 9422c53f3717906478da5a963fcbec13, type: 3}

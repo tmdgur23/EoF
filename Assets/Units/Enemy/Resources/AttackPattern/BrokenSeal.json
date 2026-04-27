@@ -1,0 +1,78 @@
+{
+  "Attacks": [
+    {
+      "Name": "Corrupting Pulse",
+      "AnimationName": "Attack",
+      "AttackSound": "",
+      "VFXIndex": -1,
+      "Description": "This enemy intents to corrupt you.",
+      "Icon": "IntentIcons/IconCorruptSoul",
+      "Effect": [
+        [
+          7,
+          {
+            "Soul": -10,
+            "CustomTarget": 1,
+            "Lens": [
+              2,
+              {}
+            ]
+          }
+        ]
+      ],
+      "IntentionPriorityIndex": 0
+    },
+    {
+      "Name": "Vicious Strike",
+      "AnimationName": "Attack",
+      "AttackSound": "SFX/SFXDamageBlunt_Light",
+      "VFXIndex": -1,
+      "Description": "This enemy intents to strike you.",
+      "Icon": "IntentIcons/IconAttack",
+      "Effect": [
+        [
+          8,
+          {
+            "Damage": 10,
+            "CustomTarget": 1,
+            "Lens": [
+              0,
+              {}
+            ]
+          }
+        ]
+      ],
+      "IntentionPriorityIndex": 0
+    },
+    {
+      "Name": "Whispers of Agony",
+      "AnimationName": "Attack",
+      "AttackSound": "",
+      "VFXIndex": -1,
+      "Description": "This enemy intents to debuff you.",
+      "Icon": "IntentIcons/IconDebuffPlayer",
+      "Effect": [
+        [
+          4,
+          {
+            "CustomTarget": 1,
+            "Count": 2,
+            "Status": [
+              9,
+              {
+                "Percentage": 50,
+                "Name": "Vulnerability",
+                "Icon": "Status/Icons/IconVulnerability",
+                "AudioClip": "",
+                "Description": "Recive 50% more damage from attacks.\r",
+                "BuffType": 2
+              }
+            ],
+            "Lens": null
+          }
+        ]
+      ],
+      "IntentionPriorityIndex": 0
+    }
+  ]
+}
