@@ -49,7 +49,7 @@ namespace Cards.General
 
 			yield return m_player.StartCoroutine(card.PlayCoroutine(enemy));
 
-			BattleInfo.Player.Energy.Current -= card.CardData.Energy;
+			BattleInfo.Player.Energy.Current -= card.EnergyCost;
 			CardTurnLog.Add(card.CardData.Type);
 
 			if (card.CardData.Type == CardType.Blessing)

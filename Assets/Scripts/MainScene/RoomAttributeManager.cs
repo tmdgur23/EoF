@@ -9,25 +9,31 @@ using Zenject;
 
 namespace MainScene
 {
-    public enum AttributeType
+    public enum RoomConceptType
     {
-        Strength,     // 근력
-        Intelligence, // 지식
-        Willpower     // 정신력
+        Strength_Base, Strength_Bleed, Strength_Combo,
+        Intelligence_Analyze, Intelligence_Amplify, Intelligence_Debuff,
+        Willpower_Fate, Willpower_Madness, Willpower_Convert
     }
 
     public class RoomAttributeManager : MonoBehaviour
     {
         public static RoomAttributeManager Instance { get; private set; }
 
-        private Dictionary<int, AttributeType> roomAttributes = new Dictionary<int, AttributeType>();
+        private Dictionary<int, RoomConceptType> roomConcepts = new Dictionary<int, RoomConceptType>();
 
         // 카드 매핑 (ID 기준)
-        private Dictionary<AttributeType, int[]> attributeCardIds = new Dictionary<AttributeType, int[]>
+        private Dictionary<RoomConceptType, int[]> conceptCardIds = new Dictionary<RoomConceptType, int[]>
         {
-            { AttributeType.Strength, new int[] { 301, 302, 303, 304, 305, 306, 307, 308, 309 } },
-            { AttributeType.Intelligence, new int[] { 310, 311, 312, 313, 314, 315, 316, 317, 318 } },
-            { AttributeType.Willpower, new int[] { 319, 320, 321, 322, 323, 324, 325, 326, 327 } }
+            { RoomConceptType.Strength_Base, new int[] { 301, 302, 303 } },
+            { RoomConceptType.Strength_Bleed, new int[] { 304, 305, 306 } },
+            { RoomConceptType.Strength_Combo, new int[] { 307, 308, 309 } },
+            { RoomConceptType.Intelligence_Analyze, new int[] { 310, 311, 312 } },
+            { RoomConceptType.Intelligence_Amplify, new int[] { 313, 314, 315 } },
+            { RoomConceptType.Intelligence_Debuff, new int[] { 316, 317, 318 } },
+            { RoomConceptType.Willpower_Fate, new int[] { 319, 320, 321 } },
+            { RoomConceptType.Willpower_Madness, new int[] { 322, 323, 324 } },
+            { RoomConceptType.Willpower_Convert, new int[] { 325, 326, 327 } }
         };
 
         [Header("Reward Configuration")]
@@ -44,35 +50,39 @@ namespace MainScene
 
         private void AssignRandomAttributes()
         {
-            AttributeType[] types = (AttributeType[])System.Enum.GetValues(typeof(AttributeType));
+            RoomConceptType[] types = (RoomConceptType[])System.Enum.GetValues(typeof(RoomConceptType));
             for (int i = 1; i <= 20; i++)
             {
-                AttributeType randomType = types[Random.Range(0, types.Length)];
-                roomAttributes[i] = randomType;
-                Debug.Log($"Room {i} assigned with: {randomType}");
+                RoomConceptType randomType = types[Random.Range(0, types.Length)];
+                roomConcepts[i] = randomType;
+                Debug.Log($"Room {i} assigned with concept: {randomType}");
             }
         }
 
-        public void TriggerReward(int roomIndex)
+        public RoomConceptType GetRoomConcept(int roomIndex)
         {
-            Debug.Log($"[RoomAttributeManager] TriggerReward started for Room {roomIndex}");
+            if (roomConcepts.TryGetValue(roomIndex, out RoomConceptType type))
+            {
+                return type;
+            }
+            return RoomConceptType.Strength_Base; // 기본값
+        }
+
+        public void TriggerReward(int roomIndex, int count = 1)
+        {
+            Debug.Log($"[RoomAttributeManager] TriggerReward started for Room {roomIndex}. Count: {count}");
             
-            // Safety check: Don't open if already open
-            if (MainSceneRewardUI.Instance != null && MainSceneRewardUI.Instance.gameObject.activeInHierarchy)
+            // UI가 켜져 있어도 카드를 다시 띄울 수 있도록 Safety check 제거 (연속 3번 획득 구현)
+
+            if (!roomConcepts.ContainsKey(roomIndex))
             {
-                Debug.LogWarning("[RoomAttributeManager] Reward UI is already active. Ignoring trigger.");
+                Debug.LogWarning($"[RoomAttributeManager] Room index {roomIndex} not found in roomConcepts dictionary!");
                 return;
             }
 
-            if (!roomAttributes.ContainsKey(roomIndex))
-            {
-                Debug.LogWarning($"[RoomAttributeManager] Room index {roomIndex} not found in roomAttributes dictionary!");
-                return;
-            }
-
-            AttributeType type = roomAttributes[roomIndex];
-            var cardIds = attributeCardIds[type];
-            Debug.Log($"[RoomAttributeManager] Attributes for room {roomIndex} is {type}. Found {cardIds.Length} mapped card IDs.");
+            RoomConceptType type = roomConcepts[roomIndex];
+            var cardIds = conceptCardIds[type];
+            Debug.Log($"[RoomAttributeManager] Concept for room {roomIndex} is {type}. Found {cardIds.Length} mapped card IDs.");
             
             var pool = DeckUtility.LoadPool("CardPools/NewConceptPool"); 
             if (pool == null)
@@ -140,7 +150,7 @@ namespace MainScene
                 rewardUI.SetCardPrefab(cardPrefab);
                 
                 // 4. Open it!
-                rewardUI.OpenReward(randomSelection);
+                rewardUI.OpenReward(randomSelection, roomIndex, count);
                 Debug.Log($"[RoomAttributeManager] Successfully opened Reward UI on object: {rewardObj.name}");
             }
             else

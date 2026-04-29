@@ -14,6 +14,8 @@ namespace Cards.General
 		public int LastPlayEffect { get; private set; }
 		public Unit Owner { get; private set; }
 		public Unit Target { get; set; }
+		public int CostReduction { get; set; } = 0;
+		public int EnergyCost => UnityEngine.Mathf.Max(0, CardData.Energy - CostReduction);
 
 		public CardInstance(CardData cardData)
 		{
@@ -28,7 +30,7 @@ namespace Cards.General
 
 		public bool CanPlay(Player player)
 		{
-			var hasEnergy = player.Energy.Current >= CardData.Energy;
+			var hasEnergy = player.Energy.Current >= EnergyCost;
 
 			if (CardData.PlayCondition.Any(conditionEffect => !conditionEffect.HasReached(player)))
 			{

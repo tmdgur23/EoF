@@ -49,14 +49,27 @@ namespace Battle.GameStates
 		/// </summary>
 		private void SetUpPlayer()
 		{
-			if (m_config.BattleCount == 0) return;
+			// 첫 전투(BattleCount == 0)라 하더라도, 메인씬에서 체력 보상을 받아
+			// config.Health가 세팅되어 있다면 그 값을 불러와야 합니다.
+			if (m_config.Health != null && m_config.Health.Max > 0)
+			{
+				BattleInfo.Player.Health.Set(m_config.Health.Min,
+											 m_config.Health.Max);
 
-			BattleInfo.Player.Health.Set(m_config.Health.Min,
-										 m_config.Health.Max);
+				BattleInfo.Player.Soul.Set(BattleInfo.Player.Soul.Min,
+										   m_config.Soul,
+										   m_config.Health.Max);
+			}
+			else if (m_config.BattleCount > 0)
+			{
+				// 만약 Health 데이터가 없는데 배틀 카운트가 진행된 경우의 예외 처리 (기존 안전 장치)
+				BattleInfo.Player.Health.Set(m_config.Health.Min,
+											 m_config.Health.Max);
 
-			BattleInfo.Player.Soul.Set(BattleInfo.Player.Soul.Min,
-									   m_config.Soul,
-									   m_config.Health.Max);
+				BattleInfo.Player.Soul.Set(BattleInfo.Player.Soul.Min,
+										   m_config.Soul,
+										   m_config.Health.Max);
+			}
 		}
 
 #region Ignore

@@ -68,12 +68,11 @@ namespace Utilities
 			foreach (var card in deck.Cards)
 			{
 				var id = card.CardData.Id;
-
-				var index = data.Cards.FindIndex(x => x.CardId == id);
+				var index = data.Cards.FindIndex(x => x.CardId == id && x.CostReduction == card.CostReduction);
 
 				if (index == -1)
 				{
-					data.Cards.Add(new CardSaveData() {CardId = id, Count = 1});
+					data.Cards.Add(new CardSaveData() {CardId = id, Count = 1, CostReduction = card.CostReduction});
 				}
 				else
 				{

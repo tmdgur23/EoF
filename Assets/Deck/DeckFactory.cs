@@ -73,14 +73,18 @@ namespace Deck
 
 						if (isNewId)
 						{
-							retVal.Add(new CardInstance(data, player));
+							var inst = new CardInstance(data, player);
+							inst.CostReduction = cardData.CostReduction;
+							retVal.Add(inst);
 						}
 						else
 						{
 							var newData = GeneralExtensions.DeepCopy(data);
 							newData.Illustration = data.Illustration;
 							newData.Icon = data.Icon;
-							retVal.Add(new CardInstance(newData, player));
+							var inst = new CardInstance(newData, player);
+							inst.CostReduction = cardData.CostReduction;
+							retVal.Add(inst);
 						}
 					}
 				}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Battle.RewardMenu;
 using Cards.General;
@@ -80,10 +80,20 @@ namespace Deck
 		{
 			if (OnSelected != null)
 			{
-				m_confirmationPopUp.Open(() => { OnSelected?.Invoke(view); });
+				if (m_confirmationPopUp != null)
+				{
+					m_confirmationPopUp.Open(() => { OnSelected?.Invoke(view); });
+				}
+				else
+				{
+					OnSelected.Invoke(view);
+				}
 			}
 
-			PopUpHandler.Instance.CloseAll();
+			if (PopUpHandler.Instance != null)
+			{
+				PopUpHandler.Instance.CloseAll();
+			}
 		}
 
 		public void Close()

@@ -22,6 +22,10 @@ namespace MainScene
         private List<GameObject> m_spawnedCards = new List<GameObject>();
         private float m_openTime;
         private bool m_isProcessing = false; // To prevent multiple selections
+        private int m_currentRoomIndex = 0;
+        private int m_remainingCount = 1;
+
+        private int cardsGainedThisRoom = 0;
 
         private void Awake()
         {
@@ -32,9 +36,12 @@ namespace MainScene
             if (m_background != null) m_background.SetActive(false);
         }
 
-        public void OpenReward(IEnumerable<CardInstance> cards)
+        public void OpenReward(IEnumerable<CardInstance> cards, int roomIndex = 0, int count = 1)
         {
-            Debug.Log("[MainSceneRewardUI] OpenReward() Call Started!");
+            Debug.Log($"[MainSceneRewardUI] OpenReward() Call Started! Count: {count}");
+            
+            m_currentRoomIndex = roomIndex;
+            m_remainingCount = count;
             
             // 필수 레퍼런스 체크
             if (m_contentTransform == null) AutoLinkReferences();
@@ -198,8 +205,13 @@ namespace MainScene
 
         public void OnCardSelected(Cards.General.CardInstance card)
         {
-            Debug.Log($"[MainSceneRewardUI] OnCardSelected called! card={card.CardData.Name}, isProcessing={m_isProcessing}, thisIsNull={(this == null)}");
-            
+            if (m_isProcessing)
+            {
+                Debug.LogWarning("[MainSceneRewardUI] 이미 처리 중입니다. 중복 클릭 무시됨.");
+                return;
+            }
+
+            Debug.Log($"[MainSceneRewardUI] OnCardSelected called! card={card.CardData.Name}");
             m_isProcessing = true; // LOCK!
             
             try
@@ -241,19 +253,29 @@ namespace MainScene
                     FallbackDirectSave(card);
                 }
 
-                int currentRewards = PlayerPrefs.GetInt("MainScene_Rewards", 0);
-                currentRewards++;
-                
-                if (currentRewards >= 5)
+                // 카드 덱 장수 갱신 (MainSceneDeckViewer가 존재할 경우)
+                if (MainSceneDeckViewer.Instance != null)
                 {
-                    PlayerPrefs.SetInt("MainScene_Rewards", 0);
-                    Debug.Log("[MainSceneRewardUI] 5th reward reached! Transitioning to Battle...");
-                    UnityEngine.SceneManagement.SceneManager.LoadScene("Battle");
+                    MainSceneDeckViewer.Instance.UpdateCounter();
+                }
+
+                Debug.Log("[MainSceneRewardUI] 카드 1장 획득 완료! UI를 닫습니다.");
+                
+                // 5회 상호작용 달성 시 방 종료 체크
+                if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
+                {
+                    Debug.Log("[MainSceneRewardUI] 방 안에서 보상 5회 획득 달성. 방 탐색을 종료합니다.");
+                    RoomExplorationManager.Instance.ExitRoomOrBattle();
                 }
                 else
                 {
-                    PlayerPrefs.SetInt("MainScene_Rewards", currentRewards);
-                    Debug.Log($"[MainSceneRewardUI] Reward count: {currentRewards}/5");
+                    Close(); // 5회가 안 됐으면 그냥 UI만 닫고 계속 탐색
+                    
+                    if (m_remainingCount > 1 && RoomAttributeManager.Instance != null)
+                    {
+                        Debug.Log($"[MainSceneRewardUI] 남은 카드 선택 횟수: {m_remainingCount - 1}. 다시 띄웁니다.");
+                        RoomAttributeManager.Instance.TriggerReward(m_currentRoomIndex, m_remainingCount - 1);
+                    }
                 }
             }
             catch (System.Exception e)
@@ -262,9 +284,9 @@ namespace MainScene
             }
             finally
             {
-                Debug.Log("[MainSceneRewardUI] Closing Reward UI (Bulletproof Finally Block)...");
+                Debug.Log("[MainSceneRewardUI] Cleaning up Reward UI states...");
                 
-                // Deactivate all Reward UIs in the scene
+                // 에러 발생 여부에 상관없이 UI를 닫고 커서 상태를 복구합니다.
                 var rewards = FindObjectsOfType<MainSceneRewardUI>();
                 if (rewards != null)
                 {
@@ -318,6 +340,9 @@ namespace MainScene
 
             Debug.Log("[MainSceneRewardUI] Closing Reward UI...");
             
+            // 확실하게 자기 자신을 끕니다.
+            this.gameObject.SetActive(false);
+
             // Robust close: Deactivate all Reward UIs in the scene
             var rewards = FindObjectsOfType<MainSceneRewardUI>();
             foreach (var r in rewards)
@@ -340,23 +365,6 @@ namespace MainScene
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-            }
-        }
-
-        private void OnGUI()
-        {
-            // 보상 획득 횟수를 화면 좌측 상단에 표시
-            int currentRewards = PlayerPrefs.GetInt("MainScene_Rewards", 0);
-            GUIStyle style = new GUIStyle(GUI.skin.label);
-            style.fontSize = 24;
-            style.fontStyle = FontStyle.Bold;
-            style.normal.textColor = Color.yellow;
-
-            GUI.Label(new Rect(20, 80, 400, 50), $"Rewards Collected: {currentRewards} / 5", style);
-            
-            if (m_isProcessing)
-            {
-                GUI.Label(new Rect(Screen.width / 2 - 100, Screen.height / 2 - 25, 200, 50), "Processing Choice...", style);
             }
         }
     }

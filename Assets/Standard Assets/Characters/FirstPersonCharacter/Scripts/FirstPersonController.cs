@@ -271,6 +271,12 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void RotateView()
         {
+            // 커서가 보일 때는 마우스 룩(카메라 회전)을 중지하여 클릭을 쉽게 만듭니다.
+            if (Cursor.visible)
+            {
+                return;
+            }
+
             if (m_Camera == null)
             {
                 EnsureCamera();

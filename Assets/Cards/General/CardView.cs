@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,7 +26,7 @@ namespace Cards.General
 			
 			var cardInfo = m_cardModel.Instance.CardData;
 
-			UpdateEnergy(cardInfo);
+			UpdateEnergy();
 			UpdateName(cardInfo);
 			UpdateIllustration(cardInfo);
 			UpdateIcon(cardInfo);
@@ -42,9 +42,16 @@ namespace Cards.General
 			}
 		}
 
-		private void UpdateEnergy(CardData cardInfo)
+		private void UpdateEnergy()
 		{
-			var energyTxt = cardInfo.Energy.ToString();
+			string energyTxt = m_cardModel.Instance.EnergyCost.ToString();
+			
+			// 코스트가 깎인 상태라면 녹색으로 표기
+			if (m_cardModel.Instance.CostReduction > 0)
+			{
+				energyTxt = $"<color=green>{energyTxt}</color>";
+			}
+
 			if (m_energy.text != energyTxt)
 			{
 				m_energy.text = energyTxt;

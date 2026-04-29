@@ -17,5 +17,6 @@ namespace Deck
 	{
 		public int CardId;
 		public int Count;
+		public int CostReduction;
 	}
 }
