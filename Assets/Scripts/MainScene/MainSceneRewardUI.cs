@@ -121,10 +121,10 @@ namespace MainScene
             }
 
             // Spawn cards
-            int count = 0;
+            int spawnedCount = 0;
             foreach (var cardInstance in cards)
             {
-                count++;
+                spawnedCount++;
                 GameObject cardGo = Instantiate(m_cardPrefab, m_contentTransform);
                 m_spawnedCards.Add(cardGo);
 
@@ -153,7 +153,7 @@ namespace MainScene
                 });
                 trigger.triggers.Add(downEntry);
             }
-        Debug.Log($"[MainSceneRewardUI] Successfully spawned and setup {count} cards.");
+        Debug.Log($"[MainSceneRewardUI] Successfully spawned and setup {spawnedCount} cards.");
 
         Canvas.ForceUpdateCanvases();
         Debug.Log("[MainSceneRewardUI] OpenReward() Call Finished. Waiting for user click...");
