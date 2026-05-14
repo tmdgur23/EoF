@@ -33,6 +33,8 @@ namespace Battle.GameStates
 			}
 			else
 			{
+				// 첫 턴 이후부터는 드로우 보너스를 제거하고 기본 5장으로 복구합니다.
+				BattleInfo.Player.HandSize = 5;
 				BattleInfo.Player.ReCreateDrawPile();
 			}
 
@@ -63,7 +65,12 @@ namespace Battle.GameStates
 		{
 			BattleInfo.TurnPhase = TurnPhase.StatusPhase;
 			var player = BattleInfo.Player;
-			player.Defense.Current = 0;
+			
+			// 첫 턴이 아닐 때만 방어도를 초기화합니다. (보너스 방어도 유지용)
+			if (m_started)
+			{
+				player.Defense.Current = 0;
+			}
 
 			player.StatusContainer.UpdateDuration();
 		}

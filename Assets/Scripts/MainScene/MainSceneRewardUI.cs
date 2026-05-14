@@ -24,6 +24,7 @@ namespace MainScene
         private bool m_isProcessing = false; // To prevent multiple selections
         private int m_currentRoomIndex = 0;
         private int m_remainingCount = 1;
+        public System.Action OnCloseCallback; // Callback for sequential reward handling
 
         private int cardsGainedThisRoom = 0;
 
@@ -101,6 +102,22 @@ namespace MainScene
 
             if (m_background != null) m_background.SetActive(true);
             
+            // Ensure GraphicRaycaster exists on this UI
+            if (GetComponent<GraphicRaycaster>() == null) gameObject.AddComponent<GraphicRaycaster>();
+            if (GetComponent<Canvas>() == null) 
+            {
+                var canvas = gameObject.AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = 1000;
+            }
+            else
+            {
+                var canvas = GetComponent<Canvas>();
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = 1000;
+            }
+            
             var cardReward = transform.Find("CardReward");
             if (cardReward != null)
             {
@@ -138,9 +155,36 @@ namespace MainScene
                 var hoverable = cardGo.GetComponent<Cards.General.HoverableCard>();
                 if (hoverable != null) Destroy(hoverable);
 
+                // Ensure it can be clicked
+                var cg = cardGo.GetComponent<CanvasGroup>() ?? cardGo.AddComponent<CanvasGroup>();
+                cg.blocksRaycasts = true;
+                cg.interactable = true;
+
                 // 클릭 이벤트가 버블링되지 않을 경우를 대비하여 이미지가 있는 자식(CardModel)에 직접 트리거를 추가합니다.
                 var clickTarget = cardGo.transform.Find("CardModel")?.gameObject ?? cardGo;
                 
+                // Ensure clickTarget also has CanvasGroup if it's different from cardGo
+                if (clickTarget != cardGo)
+                {
+                    var childCg = clickTarget.GetComponent<CanvasGroup>() ?? clickTarget.AddComponent<CanvasGroup>();
+                    childCg.blocksRaycasts = true;
+                    childCg.interactable = true;
+                }
+                
+                // [IMPORTANT] UI Raycast requires a Graphic component (like Image) with raycastTarget = true.
+                // If the target has no Graphic, we add a transparent one.
+                var graphic = clickTarget.GetComponent<UnityEngine.UI.Graphic>();
+                if (graphic == null)
+                {
+                    var img = clickTarget.AddComponent<UnityEngine.UI.Image>();
+                    img.color = new Color(0, 0, 0, 0); // Transparent
+                    img.raycastTarget = true;
+                }
+                else
+                {
+                    graphic.raycastTarget = true;
+                }
+
                 UnityEngine.EventSystems.EventTrigger trigger = clickTarget.GetComponent<UnityEngine.EventSystems.EventTrigger>();
                 if (trigger == null) trigger = clickTarget.AddComponent<UnityEngine.EventSystems.EventTrigger>();
                 trigger.triggers.Clear();
@@ -148,10 +192,17 @@ namespace MainScene
                 var downEntry = new UnityEngine.EventSystems.EventTrigger.Entry();
                 downEntry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerDown;
                 downEntry.callback.AddListener((data) => {
-                    Debug.Log($"[MainSceneRewardUI] Card click detected on: {cardInstance.CardData.Name}");
-                    OnCardSelected(cardInstance);
+                    Debug.Log($"[MainSceneRewardUI] PointerDown detected on: {cardInstance.CardData.Name}");
                 });
                 trigger.triggers.Add(downEntry);
+
+                var clickEntry = new UnityEngine.EventSystems.EventTrigger.Entry();
+                clickEntry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
+                clickEntry.callback.AddListener((data) => {
+                    Debug.Log($"[MainSceneRewardUI] PointerClick detected on: {cardInstance.CardData.Name}");
+                    OnCardSelected(cardInstance);
+                });
+                trigger.triggers.Add(clickEntry);
             }
         Debug.Log($"[MainSceneRewardUI] Successfully spawned and setup {spawnedCount} cards.");
 
@@ -214,6 +265,7 @@ namespace MainScene
             Debug.Log($"[MainSceneRewardUI] OnCardSelected called! card={card.CardData.Name}");
             m_isProcessing = true; // LOCK!
             
+            bool shouldClose = false;
             try
             {
                 if (m_player == null) m_player = FindObjectOfType<Player>();
@@ -225,11 +277,23 @@ namespace MainScene
                     {
                         if (spawned != null)
                         {
+                            // Disable root raycasts
                             var cg = spawned.GetComponent<CanvasGroup>();
                             if (cg != null) cg.blocksRaycasts = false;
                             
                             var trigger = spawned.GetComponent<UnityEngine.EventSystems.EventTrigger>();
                             if (trigger != null) trigger.enabled = false;
+
+                            // Also disable child (CardModel) raycasts
+                            var childModel = spawned.transform.Find("CardModel");
+                            if (childModel != null)
+                            {
+                                var childCg = childModel.GetComponent<CanvasGroup>();
+                                if (childCg != null) childCg.blocksRaycasts = false;
+                                
+                                var childTrigger = childModel.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+                                if (childTrigger != null) childTrigger.enabled = false;
+                            }
                         }
                     }
                 }
@@ -259,56 +323,45 @@ namespace MainScene
                     MainSceneDeckViewer.Instance.UpdateCounter();
                 }
 
-                Debug.Log("[MainSceneRewardUI] 카드 1장 획득 완료! UI를 닫습니다.");
+                Debug.Log("[MainSceneRewardUI] 카드 1장 획득 완료!");
                 
                 // 5회 상호작용 달성 시 방 종료 체크
                 if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
                 {
                     Debug.Log("[MainSceneRewardUI] 방 안에서 보상 5회 획득 달성. 방 탐색을 종료합니다.");
                     RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    shouldClose = true;
                 }
                 else
                 {
-                    Close(); // 5회가 안 됐으면 그냥 UI만 닫고 계속 탐색
-                    
                     if (m_remainingCount > 1 && RoomAttributeManager.Instance != null)
                     {
                         Debug.Log($"[MainSceneRewardUI] 남은 카드 선택 횟수: {m_remainingCount - 1}. 다시 띄웁니다.");
                         RoomAttributeManager.Instance.TriggerReward(m_currentRoomIndex, m_remainingCount - 1);
+                        shouldClose = false; // 더 뽑아야 하므로 닫지 않음
+                    }
+                    else
+                    {
+                        shouldClose = true; // 더 뽑을 게 없으므로 닫음
                     }
                 }
             }
             catch (System.Exception e)
             {
                 Debug.LogError($"[MainSceneRewardUI] Exception in OnCardSelected: {e.Message}\n{e.StackTrace}");
+                shouldClose = true; // 에러 발생 시 UI가 멈추지 않도록 닫음
             }
             finally
             {
                 Debug.Log("[MainSceneRewardUI] Cleaning up Reward UI states...");
                 
-                // 에러 발생 여부에 상관없이 UI를 닫고 커서 상태를 복구합니다.
-                var rewards = FindObjectsOfType<MainSceneRewardUI>();
-                if (rewards != null)
+                if (shouldClose)
                 {
-                    foreach (var r in rewards)
-                    {
-                        if (r != null && r.gameObject != null)
-                        {
-                            r.gameObject.SetActive(false);
-                        }
-                    }
-                }
-
-                // Restore cursor state
-                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main")
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
+                    Close();
                 }
                 else
                 {
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
+                    m_isProcessing = false; // 다음 선택을 위해 락만 해제
                 }
             }
         }
@@ -354,6 +407,10 @@ namespace MainScene
             }
 
             m_isProcessing = false;
+            
+            // 보상 창이 완전히 닫힐 때 콜백 실행
+            OnCloseCallback?.Invoke();
+            OnCloseCallback = null;
 
             // Re-lock Cursor ONLY if in "Main" scene!
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Main")

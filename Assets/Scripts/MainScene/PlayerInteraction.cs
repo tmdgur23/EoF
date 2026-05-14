@@ -27,6 +27,15 @@ namespace MainScene
             Knowledge_Analyze, Knowledge_Amplify, Knowledge_Debuff,
             Mind_Fate, Mind_Madness, Mind_Convert
         }
+        
+        // ================== 보상 큐 시스템 ==================
+        private struct RewardAction
+        {
+            public string type; // "CARD", "REMOVE", "UPGRADE"
+            public int count;
+        }
+        private Queue<RewardAction> rewardQueue = new Queue<RewardAction>();
+        // ====================================================
 
         private void Start()
         {
@@ -47,14 +56,26 @@ namespace MainScene
 
         private void CreateCrosshair()
         {
+            // Prevent duplicates
+            var oldCanvas = GameObject.Find("CrosshairCanvas");
+            if (oldCanvas != null) Destroy(oldCanvas);
+
             GameObject canvasObj = new GameObject("CrosshairCanvas");
+            canvasObj.name = "CrosshairCanvas";
+            
+            // BULLETPROOF: Ensure the crosshair stays in the same scene as the player, 
+            // even if the active scene hasn't switched yet during loading.
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(canvasObj, gameObject.scene);
+
             Canvas canvas = canvasObj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 999; // BULLETPROOF: Ensure crosshair is always on top
             canvasObj.AddComponent<UnityEngine.UI.CanvasScaler>();
             
             GameObject imgObj = new GameObject("Crosshair");
             imgObj.transform.SetParent(canvasObj.transform);
             crosshair = imgObj.AddComponent<UnityEngine.UI.Image>();
+            crosshair.raycastTarget = false; // Prevent crosshair from blocking clicks
             
             crosshair.rectTransform.sizeDelta = new Vector2(8, 8);
             crosshair.rectTransform.anchoredPosition = Vector2.zero;
@@ -72,7 +93,16 @@ namespace MainScene
 
         private void CreateHintUI()
         {
+            // Prevent duplicates
+            var oldHint = GameObject.Find("HintCanvas");
+            if (oldHint != null) Destroy(oldHint);
+
             GameObject canvasGo = new GameObject("HintCanvas");
+            canvasGo.name = "HintCanvas";
+            
+            // BULLETPROOF: Ensure the hint UI stays in the same scene as the player
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(canvasGo, gameObject.scene);
+
             hintCanvas = canvasGo.AddComponent<Canvas>();
             hintCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasGo.AddComponent<CanvasScaler>();
@@ -150,6 +180,13 @@ namespace MainScene
         {
             EnsureCamera();
             if (mainCamera == null) return;
+
+            // BULLETPROOF: Keep crosshair visible in Main Scene
+            if (crosshair != null && crosshair.canvas != null)
+            {
+                if (!crosshair.canvas.gameObject.activeSelf)
+                    crosshair.canvas.gameObject.SetActive(true);
+            }
 
             // 방 밖으로 나갔거나 다른 방으로 이동했다면 읽은 책 기록 초기화
             if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomIndex != lastTrackedRoomIndex)
@@ -359,9 +396,15 @@ namespace MainScene
                     {
                         var config = OptionMenu.Options.LoadConfigData();
                         config.Soul += amount;
-                        if (config.Soul < 0) config.Soul = 0;
                         OptionMenu.Options.SaveConfigData(config);
                         Debug.Log($"[PlayerInteraction] 소울 보상 적용 완료. 현재 소울: {config.Soul}");
+                        
+                        // 게임 오버 체크 로직
+                        if (config.Soul <= -50)
+                        {
+                            TriggerGameOver();
+                        }
+
                         if (MainSceneHUD.Instance != null) MainSceneHUD.Instance.UpdateUI();
                     }
                 }
@@ -373,48 +416,101 @@ namespace MainScene
                         if (config.Health == null || config.Health.Max == 0) config.Health = new Utilities.Range(100, 100);
                         
                         config.Health.Max += amount;
-                        config.Health.Min += amount; // 최대 체력이 늘어나면 현재 체력도 함께 회복시켜주는 것이 일반적입니다.
+                        config.Health.Min += amount; 
                         
                         OptionMenu.Options.SaveConfigData(config);
                         Debug.Log($"[PlayerInteraction] 최대 체력 증가 완료. 현재 최대 체력: {config.Health.Max}");
                         if (MainSceneHUD.Instance != null) MainSceneHUD.Instance.UpdateUI();
                     }
                 }
+                else if ((parts[i] == "STR" || parts[i] == "INT" || parts[i] == "MEN") && i + 1 < parts.Length)
+                {
+                    if (int.TryParse(parts[i+1], out int amount))
+                    {
+                        int currentStat = PlayerPrefs.GetInt("Bonus_" + parts[i], 0);
+                        PlayerPrefs.SetInt("Bonus_" + parts[i], currentStat + amount);
+                        Debug.Log($"[PlayerInteraction] 영구 스탯 보너스 적용: {parts[i]} +{amount}");
+                    }
+                }
+                else if (parts[i] == "NEXT" && i + 2 < parts.Length)
+                {
+                    string buffType = parts[i+1];
+                    if (int.TryParse(parts[i+2], out int amount))
+                    {
+                        int currentBuff = PlayerPrefs.GetInt("Next_" + buffType, 0);
+                        PlayerPrefs.SetInt("Next_" + buffType, currentBuff + amount);
+                        Debug.Log($"[PlayerInteraction] 다음 전투 예약 버프: {buffType} +{amount}");
+                    }
+                }
             }
 
-            // 2. UI 호출 (동시에 두 개의 UI가 뜨는 것을 방지하기 위해 우선순위 처리)
+            // 2. UI 보상을 큐에 삽입
             if (choiceId.Contains("REMOVE"))
             {
-                if (MainSceneDeckViewer.Instance != null)
-                {
-                    int count = choiceId.Contains("REMOVE_2") ? 2 : 1;
-                    MainSceneDeckViewer.Instance.OpenForRemoval(count);
-                    uiOpened = true;
-                }
+                int count = choiceId.Contains("REMOVE_2") ? 2 : 1;
+                rewardQueue.Enqueue(new RewardAction { type = "REMOVE", count = count });
             }
-            else if (choiceId.Contains("UPGRADE"))
+            if (choiceId.Contains("UPGRADE"))
             {
-                if (MainSceneDeckViewer.Instance != null)
-                {
-                    int count = choiceId.Contains("UPGRADE_2") ? 2 : 1;
-                    MainSceneDeckViewer.Instance.OpenForUpgrade(count);
-                    uiOpened = true;
-                }
+                int count = choiceId.Contains("UPGRADE_2") ? 2 : 1;
+                rewardQueue.Enqueue(new RewardAction { type = "UPGRADE", count = count });
             }
-            else if (choiceId.Contains("CARD")) // CARD_1, CARD_2, CARD_CHOOSE_2 등 모든 카드 보상 포괄
+            if (choiceId.Contains("CARD")) 
             {
-                if (RoomAttributeManager.Instance != null && RoomExplorationManager.Instance != null)
-                {
-                    int count = choiceId.Contains("CARD_2") ? 2 : 1;
-                    RoomAttributeManager.Instance.TriggerReward(RoomExplorationManager.Instance.currentRoomIndex, count);
-                    uiOpened = true;
-                }
+                int count = choiceId.Contains("CARD_2") ? 2 : 1;
+                rewardQueue.Enqueue(new RewardAction { type = "CARD", count = count });
             }
 
-            // UI가 뜨지 않는 단순 스탯 보상이거나 꽝(NOTHING)일 경우 즉시 상호작용 체크
-            if (!uiOpened)
+            // 첫 번째 보상 프로세스 시작
+            ProcessNextReward();
+        }
+
+        private void ProcessNextReward()
+        {
+            if (rewardQueue.Count == 0)
             {
                 CheckInteractionLimit();
+                return;
+            }
+
+            var next = rewardQueue.Dequeue();
+            Debug.Log($"[PlayerInteraction] 다음 보상 처리 시작: {next.type} (개수: {next.count})");
+
+            switch (next.type)
+            {
+                case "CARD":
+                    if (RoomAttributeManager.Instance != null && RoomExplorationManager.Instance != null)
+                    {
+                        var rewardUI = Object.FindObjectOfType<MainSceneRewardUI>(true);
+                        if (rewardUI != null) rewardUI.OnCloseCallback = ProcessNextReward;
+                        RoomAttributeManager.Instance.TriggerReward(RoomExplorationManager.Instance.currentRoomIndex, next.count);
+                    }
+                    else ProcessNextReward();
+                    break;
+
+                case "REMOVE":
+                    var removeViewer = Object.FindObjectOfType<MainSceneDeckViewer>(true);
+                    if (removeViewer != null)
+                    {
+                        removeViewer.OnCloseCallback = ProcessNextReward;
+                        removeViewer.OpenForRemoval(next.count);
+                    }
+                    else ProcessNextReward();
+                    break;
+
+                case "UPGRADE":
+                    var upgradeViewer = Object.FindObjectOfType<MainSceneDeckViewer>(true);
+                    if (upgradeViewer != null)
+                    {
+                        upgradeViewer.OnCloseCallback = ProcessNextReward;
+                        upgradeViewer.OpenForUpgrade(next.count);
+                    }
+                    else ProcessNextReward();
+                    break;
+
+                default:
+                    ProcessNextReward();
+                    break;
             }
         }
 
@@ -479,6 +575,31 @@ namespace MainScene
             // 다시 카메라 회전 등을 위해 커서를 잠급니다.
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+        private void TriggerGameOver()
+        {
+            Debug.Log("[PlayerInteraction] 소울이 -50 이하가 되어 게임 오버됩니다.");
+
+            // Resources 폴더의 LooseScreen 프리팹 소환
+            GameObject losePrefab = Resources.Load<GameObject>("LooseScreen");
+            if (losePrefab != null)
+            {
+                Instantiate(losePrefab);
+                
+                // 게임 오버 시 마우스 커서 해제
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                
+                // 타겟점 숨기기
+                if (crosshair != null && crosshair.canvas != null)
+                {
+                    crosshair.canvas.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                Debug.LogError("[PlayerInteraction] LooseScreen 프리팹을 찾을 수 없습니다.");
+            }
         }
     }
 }

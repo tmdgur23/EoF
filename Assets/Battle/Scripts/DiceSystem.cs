@@ -26,6 +26,14 @@ public class DiceSystem : MonoBehaviour
     private bool isRolling;
     private bool isWaitingForInput;
 
+    // ================== 재굴림 제한 시스템 (전투 전역) ==================
+    private int baseRerollLimit = 3;      // 기본 재굴림 횟수 (전투당 3회)
+    private int extraRerollsFromBuff = 0; // 보상으로 얻은 추가 횟수
+    private int maxBattleRerolls;         // 이번 전투 총 횟수
+    private int remainingRerolls;         // 이번 전투 남은 횟수
+    private bool initializedBuff = false; // 전투 시작 시 버프 적용 여부
+    // ========================================================
+
     public bool IsBusy => currentRoll != null || pendingRolls.Count > 0 || isRolling || isWaitingForInput;
 
     private GameObject rerollBtnObj;
@@ -186,9 +194,22 @@ public class DiceSystem : MonoBehaviour
 
     private void UpdateButtonsInteractable()
     {
-        bool interactable = isWaitingForInput && !isRolling;
-        if (rerollBtnComp != null) rerollBtnComp.interactable = interactable;
-        if (stopBtnComp != null) stopBtnComp.interactable = interactable;
+        bool canReroll = isWaitingForInput && !isRolling && remainingRerolls > 0;
+        bool canStop = isWaitingForInput && !isRolling;
+
+        if (rerollBtnComp != null) 
+        {
+            rerollBtnComp.interactable = canReroll;
+            // 버튼 텍스트에 남은 횟수 표시 (예: 3/3)
+            var txt = rerollBtnComp.GetComponentInChildren<TextMeshProUGUI>();
+            if (txt != null) txt.text = $"Reroll ({remainingRerolls}/{maxBattleRerolls})";
+            else
+            {
+                var legacyTxt = rerollBtnComp.GetComponentInChildren<UnityEngine.UI.Text>();
+                if (legacyTxt != null) legacyTxt.text = $"Reroll ({remainingRerolls}/{maxBattleRerolls})";
+            }
+        }
+        if (stopBtnComp != null) stopBtnComp.interactable = canStop;
     }
 
     public void EnqueueRoll(DiceRollEffect effect, Unit target, Unit from)
@@ -202,9 +223,24 @@ public class DiceSystem : MonoBehaviour
 
     private void ProcessNextRoll()
     {
+        // 첫 굴림 시점에 버프 확인 및 이번 전투 총 횟수 결정
+        if (!initializedBuff)
+        {
+            extraRerollsFromBuff = PlayerPrefs.GetInt("Next_DICE", 0);
+            if (extraRerollsFromBuff > 0)
+            {
+                Debug.Log($"[DiceSystem] 다음 전투 주사위 버프 적용: +{extraRerollsFromBuff} 재굴림 추가");
+                PlayerPrefs.SetInt("Next_DICE", 0); // 리셋
+            }
+            maxBattleRerolls = baseRerollLimit + extraRerollsFromBuff;
+            remainingRerolls = maxBattleRerolls;
+            initializedBuff = true;
+        }
+
         if (pendingRolls.Count > 0)
         {
             currentRoll = pendingRolls.Dequeue();
+            // 더 이상 새 주사위마다 횟수를 리셋하지 않음 (전투 전역 풀 사용)
             StartRoll();
         }
         else
@@ -298,8 +334,9 @@ public class DiceSystem : MonoBehaviour
 
     public void OnRerollClicked()
     {
-        if (isWaitingForInput && currentRoll != null)
+        if (isWaitingForInput && currentRoll != null && remainingRerolls > 0)
         {
+            remainingRerolls--;
             StartRoll();
         }
     }

@@ -19,6 +19,7 @@ namespace MainScene
         public TextMeshProUGUI counterText;
 
         public static MainSceneDeckViewer Instance { get; private set; }
+        public System.Action OnCloseCallback; // Callback for sequential reward handling
 
         private Button button;
         private List<CardPool> allPools;
@@ -148,9 +149,16 @@ namespace MainScene
                 {
                     OpenForRemoval(count - 1);
                 }
-                else if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
+                else 
                 {
-                    RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    // 모든 제거 완료 시 콜백 실행
+                    OnCloseCallback?.Invoke();
+                    OnCloseCallback = null;
+
+                    if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
+                    {
+                        RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    }
                 }
             }, true);
 
@@ -177,9 +185,16 @@ namespace MainScene
                 {
                     OpenForUpgrade(count - 1);
                 }
-                else if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
+                else 
                 {
-                    RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    // 모든 강화 완료 시 콜백 실행
+                    OnCloseCallback?.Invoke();
+                    OnCloseCallback = null;
+
+                    if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
+                    {
+                        RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    }
                 }
             }, true);
 

@@ -2,6 +2,7 @@ using Battle.General;
 using Deck;
 using Units.Enemy.General;
 using Utilities;
+using UnityEngine;
 
 namespace Battle.GameStates
 {
@@ -70,6 +71,34 @@ namespace Battle.GameStates
 										   m_config.Soul,
 										   m_config.Health.Max);
 			}
+
+			// ================== 다음 전투 버프 적용 ==================
+			// 1. 방어도 추가
+			int nextDef = PlayerPrefs.GetInt("Next_DEF", 0);
+			if (nextDef > 0)
+			{
+				BattleInfo.Player.Defense.Current = nextDef;
+				UnityEngine.Debug.Log($"[InitializeState] 다음 전투 방어도 버프 적용: +{nextDef}");
+				PlayerPrefs.SetInt("Next_DEF", 0); // 사용 후 리셋
+			}
+
+			// 2. 드로우 추가
+			int nextDraw = PlayerPrefs.GetInt("Next_DRAW", 0);
+			if (nextDraw > 0)
+			{
+				BattleInfo.Player.HandSize = 5 + nextDraw;
+				UnityEngine.Debug.Log($"[InitializeState] 다음 전투 드로우 버프 적용: +{nextDraw} (총 {BattleInfo.Player.HandSize}장)");
+				PlayerPrefs.SetInt("Next_DRAW", 0); // 사용 후 리셋
+			}
+			else
+			{
+				BattleInfo.Player.HandSize = 5; // 기본값 보장
+			}
+
+			// 3. 주사위(재굴림) 추가 - DiceSystem에서 참조할 수 있도록 PlayerPrefs에 남겨두거나 정적 변수 활용
+			// 여기서는 PlayerPrefs를 그대로 두고 DiceSystem이 읽어간 뒤 리셋하도록 함
+			UnityEngine.Debug.Log($"[InitializeState] 다음 전투 주사위 버프 예약 확인: {PlayerPrefs.GetInt("Next_DICE", 0)}");
+			// =========================================================
 		}
 
 #region Ignore
