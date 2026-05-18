@@ -29,7 +29,6 @@ namespace Keyword
 		{
 			if (string.IsNullOrEmpty(text))
 			{
-				Debug.LogError("String to parse it empty!");
 				return "";
 			}
 

@@ -9,12 +9,10 @@ using AudioSettings = OptionMenu.AudioSettings;
 #pragma warning disable 0649
 public class MainMenu : MonoBehaviour
 {
-	[SerializeField] private Button m_abbondonRun;
 	[SerializeField] private AudioSettings m_audioSettings;
 
 	private void Start()
 	{
-		UpdateButtonState();
 	}
 
 	public void StartBattle()
@@ -37,20 +35,6 @@ public class MainMenu : MonoBehaviour
 	private void OnContinue()
 	{
 		LoadingScreen.LoadScene(2);
-	}
-
-	public void AbbandonRun()
-	{
-		Options.ResetConfigData();
-		UpdateButtonState();
-	}
-
-	private void UpdateButtonState()
-	{
-		var loadConfigData = Options.LoadConfigData();
-		m_abbondonRun.interactable = loadConfigData.BattleCount != 0;
-		m_abbondonRun.GetComponentInChildren<TextMeshProUGUI>().color =
-			m_abbondonRun.interactable ? Color.white : new Color(1f, 1f, 1f, 0.3f);
 	}
 
 	public void QuitApplication()

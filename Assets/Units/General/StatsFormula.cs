@@ -7,7 +7,8 @@ namespace Units.General
 	{
 		public static int CalculateDamage(float damage, Unit owner, float vulnerabilityMultiplier)
 		{
-			return Mathf.FloorToInt(CalculateDamage(damage, owner) * (1 + vulnerabilityMultiplier));
+			float baseDamage = CalculateDamage(damage, owner) * (1 + vulnerabilityMultiplier);
+			return Mathf.FloorToInt(baseDamage + owner.BonusStrength);
 		}
 
 		/// <summary>
@@ -25,7 +26,15 @@ namespace Units.General
 
 		public static int CalculateSoul(int amount, Unit unit)
 		{
-			return Mathf.RoundToInt((amount * (1 + unit.SoulMultiplier)));
+			int baseAmount = Mathf.RoundToInt((amount * (1 + unit.SoulMultiplier)));
+			if (amount == 0) return 0;
+
+			// 정신력 보너스: 얻을 때 +1, 잃을 때 1 덜 잃음 (baseAmount + BonusMental)
+			int result = baseAmount + unit.BonusMental;
+
+			// 잃을 때(amount < 0) 이득이 커서 얻는 것으로 변하면 안됨 (0으로 고정)
+			if (amount < 0) return Mathf.Min(0, result);
+			return result;
 		}
 
 		public static int PurityStacks(this Soul soul, int soulStackThreshold)

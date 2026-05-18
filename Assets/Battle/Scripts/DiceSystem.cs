@@ -202,14 +202,24 @@ public class DiceSystem : MonoBehaviour
             rerollBtnComp.interactable = canReroll;
             // 버튼 텍스트에 남은 횟수 표시 (예: 3/3)
             var txt = rerollBtnComp.GetComponentInChildren<TextMeshProUGUI>();
-            if (txt != null) txt.text = $"Reroll ({remainingRerolls}/{maxBattleRerolls})";
+            if (txt != null) txt.text = $"리롤 ({remainingRerolls}/{maxBattleRerolls})";
             else
             {
                 var legacyTxt = rerollBtnComp.GetComponentInChildren<UnityEngine.UI.Text>();
-                if (legacyTxt != null) legacyTxt.text = $"Reroll ({remainingRerolls}/{maxBattleRerolls})";
+                if (legacyTxt != null) legacyTxt.text = $"리롤 ({remainingRerolls}/{maxBattleRerolls})";
             }
         }
-        if (stopBtnComp != null) stopBtnComp.interactable = canStop;
+        if (stopBtnComp != null)
+        {
+            stopBtnComp.interactable = canStop;
+            var stopTxt = stopBtnComp.GetComponentInChildren<TextMeshProUGUI>();
+            if (stopTxt != null) stopTxt.text = "정지";
+            else
+            {
+                var legacyStopTxt = stopBtnComp.GetComponentInChildren<UnityEngine.UI.Text>();
+                if (legacyStopTxt != null) legacyStopTxt.text = "정지";
+            }
+        }
     }
 
     public void EnqueueRoll(DiceRollEffect effect, Unit target, Unit from)
@@ -226,15 +236,10 @@ public class DiceSystem : MonoBehaviour
         // 첫 굴림 시점에 버프 확인 및 이번 전투 총 횟수 결정
         if (!initializedBuff)
         {
-            extraRerollsFromBuff = PlayerPrefs.GetInt("Next_DICE", 0);
-            if (extraRerollsFromBuff > 0)
-            {
-                Debug.Log($"[DiceSystem] 다음 전투 주사위 버프 적용: +{extraRerollsFromBuff} 재굴림 추가");
-                PlayerPrefs.SetInt("Next_DICE", 0); // 리셋
-            }
-            maxBattleRerolls = baseRerollLimit + extraRerollsFromBuff;
+            maxBattleRerolls = baseRerollLimit + extraRerollsFromBuff + PlayerPrefs.GetInt("Bonus_INT", 0);
             remainingRerolls = maxBattleRerolls;
             initializedBuff = true;
+            Debug.Log($"[DiceSystem] 전투 주사위 제한 설정: 기본({baseRerollLimit}) + 지식({PlayerPrefs.GetInt("Bonus_INT", 0)}) = {maxBattleRerolls}");
         }
 
         if (pendingRolls.Count > 0)

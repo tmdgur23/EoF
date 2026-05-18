@@ -100,7 +100,14 @@ namespace MainScene
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            if (m_background != null) m_background.SetActive(true);
+            if (m_background != null) 
+            {
+                m_background.SetActive(true);
+                // 배경이 카드를 가리는 것을 방지하기 위해 맨 뒤로 보냅니다.
+                m_background.transform.SetAsFirstSibling(); 
+                var bgImg = m_background.GetComponent<UnityEngine.UI.Image>();
+                if (bgImg != null) bgImg.raycastTarget = false; // 배경은 클릭을 방해하면 안 됨
+            }
             
             // Ensure GraphicRaycaster exists on this UI
             if (GetComponent<GraphicRaycaster>() == null) gameObject.AddComponent<GraphicRaycaster>();
@@ -109,13 +116,13 @@ namespace MainScene
                 var canvas = gameObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvas.overrideSorting = true;
-                canvas.sortingOrder = 1000;
+                canvas.sortingOrder = 10000; // Very high priority
             }
             else
             {
                 var canvas = GetComponent<Canvas>();
                 canvas.overrideSorting = true;
-                canvas.sortingOrder = 1000;
+                canvas.sortingOrder = 10000;
             }
             
             var cardReward = transform.Find("CardReward");
@@ -156,7 +163,8 @@ namespace MainScene
                 if (hoverable != null) Destroy(hoverable);
 
                 // Ensure it can be clicked
-                var cg = cardGo.GetComponent<CanvasGroup>() ?? cardGo.AddComponent<CanvasGroup>();
+                var cg = cardGo.GetComponent<CanvasGroup>();
+                if (cg == null) cg = cardGo.AddComponent<CanvasGroup>();
                 cg.blocksRaycasts = true;
                 cg.interactable = true;
 
@@ -166,7 +174,8 @@ namespace MainScene
                 // Ensure clickTarget also has CanvasGroup if it's different from cardGo
                 if (clickTarget != cardGo)
                 {
-                    var childCg = clickTarget.GetComponent<CanvasGroup>() ?? clickTarget.AddComponent<CanvasGroup>();
+                    var childCg = clickTarget.GetComponent<CanvasGroup>();
+                    if (childCg == null) childCg = clickTarget.AddComponent<CanvasGroup>();
                     childCg.blocksRaycasts = true;
                     childCg.interactable = true;
                 }
@@ -185,6 +194,24 @@ namespace MainScene
                     graphic.raycastTarget = true;
                 }
 
+                // [IMPORTANT] Use Button component for more reliable clicking than EventTrigger
+                var instance = cardInstance; // Capture for lambda
+                var btn = clickTarget.GetComponent<UnityEngine.UI.Button>();
+                if (btn == null) btn = clickTarget.AddComponent<UnityEngine.UI.Button>();
+                
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(() => {
+                    Debug.Log($"[MainSceneRewardUI] Click detected on card: {instance.CardData.Name} (IsProcessing: {m_isProcessing})");
+                    OnCardSelected(instance);
+                });
+
+                // Also ensure the root object doesn't block raycasts if it's not the click target
+                if (cardGo != clickTarget)
+                {
+                    var rootGraphic = cardGo.GetComponent<UnityEngine.UI.Graphic>();
+                    if (rootGraphic != null) rootGraphic.raycastTarget = false;
+                }
+
                 UnityEngine.EventSystems.EventTrigger trigger = clickTarget.GetComponent<UnityEngine.EventSystems.EventTrigger>();
                 if (trigger == null) trigger = clickTarget.AddComponent<UnityEngine.EventSystems.EventTrigger>();
                 trigger.triggers.Clear();
@@ -192,17 +219,9 @@ namespace MainScene
                 var downEntry = new UnityEngine.EventSystems.EventTrigger.Entry();
                 downEntry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerDown;
                 downEntry.callback.AddListener((data) => {
-                    Debug.Log($"[MainSceneRewardUI] PointerDown detected on: {cardInstance.CardData.Name}");
+                    Debug.Log($"[MainSceneRewardUI] PointerDown on: {instance.CardData.Name}");
                 });
                 trigger.triggers.Add(downEntry);
-
-                var clickEntry = new UnityEngine.EventSystems.EventTrigger.Entry();
-                clickEntry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
-                clickEntry.callback.AddListener((data) => {
-                    Debug.Log($"[MainSceneRewardUI] PointerClick detected on: {cardInstance.CardData.Name}");
-                    OnCardSelected(cardInstance);
-                });
-                trigger.triggers.Add(clickEntry);
             }
         Debug.Log($"[MainSceneRewardUI] Successfully spawned and setup {spawnedCount} cards.");
 
@@ -329,7 +348,7 @@ namespace MainScene
                 if (RoomExplorationManager.Instance != null && RoomExplorationManager.Instance.currentRoomInteractions >= 5)
                 {
                     Debug.Log("[MainSceneRewardUI] 방 안에서 보상 5회 획득 달성. 방 탐색을 종료합니다.");
-                    RoomExplorationManager.Instance.ExitRoomOrBattle();
+                    // ExitRoomOrBattle() 호출은 OnCloseCallback을 통해 PlayerInteraction에서 처리되므로 여기서 중복 호출하지 않습니다.
                     shouldClose = true;
                 }
                 else

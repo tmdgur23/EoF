@@ -15,16 +15,29 @@ namespace MainScene
             labelStyle.fontSize = 24;
             labelStyle.fontStyle = FontStyle.Bold;
             labelStyle.normal.textColor = Color.yellow;
+            labelStyle.alignment = TextAnchor.MiddleCenter;
 
-            // Draw the Route count text at the top center
-            int routeCount = 1;
+            // Draw the Round text at the top center, and Loop count at the bottom center
+            int loopCount = 1;
             if (RoomExplorationManager.Instance != null)
             {
-                routeCount = RoomExplorationManager.Instance.currentLoopCount + 1;
-                if (routeCount > 3) routeCount = 3;
+                loopCount = RoomExplorationManager.Instance.currentLoopCount + 1;
             }
 
-            GUI.Label(new Rect(Screen.width / 2 - 100, 20, 300, 40), $"Route: {routeCount} / 3", labelStyle);
+            // Calculate Round based on persistent BattleCount
+            string roundText = "Round 1";
+            var config = OptionMenu.Options.LoadConfigData();
+            int battleCount = config != null ? config.BattleCount : 0;
+
+            if (battleCount == 0) roundText = "Round 1";
+            else if (battleCount == 1) roundText = "Round 2";
+            else roundText = "Round 3";
+
+            // Top Center: Round
+            GUI.Label(new Rect(Screen.width / 2 - 150, 20, 300, 40), roundText, labelStyle);
+
+            // Bottom Center: Loop
+            GUI.Label(new Rect(Screen.width / 2 - 150, Screen.height - 60, 300, 40), $"Loop: {loopCount}", labelStyle);
 
             // Draw a button in the top right corner
             if (GUI.Button(new Rect(Screen.width - 200, 20, 180, 40), "RESET ALL PROGRESS"))
@@ -57,6 +70,12 @@ namespace MainScene
             {
                 RoomExplorationManager.Instance.currentLoopCount = 0;
             }
+
+            // 스탯 초기화 (근력, 지식, 정신력)
+            PlayerPrefs.DeleteKey("Bonus_STR");
+            PlayerPrefs.DeleteKey("Bonus_INT");
+            PlayerPrefs.DeleteKey("Bonus_MEN");
+            PlayerPrefs.Save();
 
             // 3. Reset Deck to Starter Deck using PersistentData
             var starterData = DeckUtility.LoadStarterDeckData();

@@ -45,5 +45,25 @@ namespace Status.General
 			var list = Resources.Load<TextAsset>("Status/StatusList");
 			return list ? PersistentJson.Create<StatusDataList>(list.text).Status : null;
 		}
+
+		public void EnsureMetadata()
+		{
+			if (Icon == null || string.IsNullOrEmpty(Description))
+			{
+				var dataList = LoadDataList();
+				if (dataList != null)
+				{
+					var match = dataList.Find(x => x.GetType() == this.GetType());
+					if (match != null)
+					{
+						Name = match.Name;
+						Icon = match.Icon;
+						AudioClip = match.AudioClip;
+						Description = match.Description;
+						BuffType = match.BuffType;
+					}
+				}
+			}
+		}
 	}
 }

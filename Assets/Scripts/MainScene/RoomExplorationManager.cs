@@ -12,6 +12,7 @@ namespace MainScene
         public int currentLoopCount = 0;        // 현재까지 클리어한 방의 수 (최대 3)
         public int currentRoomInteractions = 0; // 현재 방에서 오브젝트와 상호작용한 횟수 (최대 5)
         public int currentRoomIndex = -1;
+        public bool statRewardGivenThisRoom = false; // 이번 방에서 스탯 보상을 이미 받았는지
         
         private Vector3 savedHallwayPosition;   // 복도로 돌아갈 때를 대비해 저장해둘 좌표
         private Transform playerTransform;
@@ -76,7 +77,8 @@ namespace MainScene
             }
             
             currentRoomIndex = roomIndex;
-            currentRoomInteractions = 0; 
+            currentRoomInteractions = 0;
+            statRewardGivenThisRoom = false; // 새 방 입장 시 스탯 보상 플래그 초기화
 
             Debug.Log($"[RoomExplorationManager] 방 {roomIndex} 에 입장했습니다.");
         }
@@ -106,6 +108,8 @@ namespace MainScene
         // 카드 보상을 3번 모두 마쳤을 때 호출
         public void ExitRoomOrBattle()
         {
+            if (currentRoomIndex == -1) return; // 이미 처리가 시작되었으면 중복 실행 방지
+
             currentLoopCount++;
             Debug.Log($"[RoomExplorationManager] 방 클리어 완료. 현재 루프: {currentLoopCount}/3");
 

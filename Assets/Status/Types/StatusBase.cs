@@ -13,6 +13,7 @@ namespace Status.Types
 		protected StatusBase(StatusData statusData, Unit unit)
 		{
 			StatusData = statusData;
+			StatusData?.EnsureMetadata();
 			AffectedUnit = unit;
 		}
 

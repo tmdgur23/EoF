@@ -31,9 +31,9 @@ namespace MainScene
             { RoomConceptType.Intelligence_Analyze, new int[] { 310, 311, 312 } },
             { RoomConceptType.Intelligence_Amplify, new int[] { 313, 314, 315 } },
             { RoomConceptType.Intelligence_Debuff, new int[] { 316, 317, 318 } },
-            { RoomConceptType.Willpower_Fate, new int[] { 319, 320, 321 } },
+            { RoomConceptType.Willpower_Fate, new int[] { 325, 326, 327 } },
             { RoomConceptType.Willpower_Madness, new int[] { 322, 323, 324 } },
-            { RoomConceptType.Willpower_Convert, new int[] { 325, 326, 327 } }
+            { RoomConceptType.Willpower_Convert, new int[] { 319, 320, 321 } }
         };
 
         [Header("Reward Configuration")]
@@ -72,12 +72,10 @@ namespace MainScene
         {
             Debug.Log($"[RoomAttributeManager] TriggerReward started for Room {roomIndex}. Count: {count}");
             
-            // UI가 켜져 있어도 카드를 다시 띄울 수 있도록 Safety check 제거 (연속 3번 획득 구현)
-
             if (!roomConcepts.ContainsKey(roomIndex))
             {
-                Debug.LogWarning($"[RoomAttributeManager] Room index {roomIndex} not found in roomConcepts dictionary!");
-                return;
+                Debug.LogWarning($"[RoomAttributeManager] Room index {roomIndex} not found! Current room interactions might be out of sync.");
+                roomIndex = 1; // Fallback to room 1 instead of returning early
             }
 
             RoomConceptType type = roomConcepts[roomIndex];
@@ -96,47 +94,33 @@ namespace MainScene
             
             if (filteredCards.Count == 0)
             {
-                Debug.LogWarning("[RoomAttributeManager] No cards matched the filtered criteria. Check card IDs!");
-                return;
+                Debug.LogWarning("[RoomAttributeManager] No cards matched. Showing all pool cards as fallback.");
+                filteredCards = pool.Cards.ToList();
             }
 
             var randomSelection = filteredCards.OrderBy(x => Random.value).Take(3).Select(data => new CardInstance(data)).ToList();
             Debug.Log($"[RoomAttributeManager] Selected {randomSelection.Count} random cards for reward.");
 
-            // 1. Precise search for the Reward UI component (even if inactive)
-            MainSceneRewardUI rewardUI = Object.FindAnyObjectByType<MainSceneRewardUI>(FindObjectsInactive.Include);
+            // 1. Reward UI 찾기 (기존 인스턴스 우선)
+            MainSceneRewardUI rewardUI = MainSceneRewardUI.Instance;
+            if (rewardUI == null) rewardUI = Object.FindAnyObjectByType<MainSceneRewardUI>(FindObjectsInactive.Include);
+            
             GameObject rewardObj = null;
 
             if (rewardUI != null)
             {
                 rewardObj = rewardUI.gameObject;
-                
-                // Cleanup any other accidental duplicates in the scene
-                var allRewardUIs = Object.FindObjectsByType<MainSceneRewardUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-                foreach (var ui in allRewardUIs)
-                {
-                    // If it's on a different GameObject, destroy the GameObject
-                    if (ui.gameObject != rewardObj) 
-                    {
-                        Destroy(ui.gameObject);
-                    }
-                    else if (ui != rewardUI)
-                    {
-                        // If it's a second component on the SAME GameObject, just destroy the component
-                        Destroy(ui);
-                    }
-                }
             }
             else
             {
-                // Fallback to name-based search if component not found
+                // 이름으로 찾기 (하이어라키에 있을 경우)
                 var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
                 foreach (var obj in allObjects)
                 {
                     if (obj.scene.name != null && obj.hideFlags == HideFlags.None && (obj.name == "Reward" || obj.name == "RewardUI" || obj.name == "RewardMenu"))
                     {
-                        if (rewardObj == null) rewardObj = obj;
-                        else Destroy(obj);
+                        rewardObj = obj;
+                        break;
                     }
                 }
             }

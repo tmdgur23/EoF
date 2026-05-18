@@ -9,7 +9,7 @@ namespace Battle.GameStates
 {
 	public class PlayerTurnState : GameState
 	{
-		private bool m_started = false;
+		private bool m_isFirstTurn = true;
 
 		protected override void Start()
 		{
@@ -17,6 +17,7 @@ namespace Battle.GameStates
 			StatusPhase();
 
 			EventLog.Add(new TurnStart(BattleInfo.Player.name));
+			m_isFirstTurn = false;
 		}
 
 		/// <summary>
@@ -27,7 +28,7 @@ namespace Battle.GameStates
 			BattleInfo.TurnPhase = TurnPhase.Restock;
 			BattleInfo.Player.Energy.Refill();
 
-			if (!m_started)
+			if (m_isFirstTurn)
 			{
 				BattleInfo.Player.CreateDrawPile();
 			}
@@ -40,7 +41,6 @@ namespace Battle.GameStates
 
 			TriggerEarlyEffects();
 			BattleInfo.Player.CreateHand();
-			m_started = true;
 		}
 
 		/// <summary>
@@ -67,7 +67,7 @@ namespace Battle.GameStates
 			var player = BattleInfo.Player;
 			
 			// 첫 턴이 아닐 때만 방어도를 초기화합니다. (보너스 방어도 유지용)
-			if (m_started)
+			if (!m_isFirstTurn)
 			{
 				player.Defense.Current = 0;
 			}

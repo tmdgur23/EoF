@@ -1,11 +1,11 @@
 {
   "Attacks": [
     {
-      "Name": "Corrupting Pulse",
+      "Name": "타락의 파동",
       "AnimationName": "Attack",
       "AttackSound": "",
       "VFXIndex": -1,
-      "Description": "This enemy intents to corrupt you.",
+      "Description": "이 적은 당신의 영혼을 타락시키려 합니다.",
       "Icon": "IntentIcons/IconCorruptSoul",
       "Effect": [
         [
@@ -23,11 +23,11 @@
       "IntentionPriorityIndex": 0
     },
     {
-      "Name": "Vicious Strike",
+      "Name": "잔혹한 일격",
       "AnimationName": "Attack",
       "AttackSound": "SFX/SFXDamageBlunt_Light",
       "VFXIndex": -1,
-      "Description": "This enemy intents to strike you.",
+      "Description": "이 적은 당신을 강타하려 합니다.",
       "Icon": "IntentIcons/IconAttack",
       "Effect": [
         [
@@ -45,11 +45,11 @@
       "IntentionPriorityIndex": 0
     },
     {
-      "Name": "Whispers of Agony",
+      "Name": "고통의 속삭임",
       "AnimationName": "Attack",
       "AttackSound": "",
       "VFXIndex": -1,
-      "Description": "This enemy intents to debuff you.",
+      "Description": "이 적은 당신에게 디버프를 부여하려 합니다.",
       "Icon": "IntentIcons/IconDebuffPlayer",
       "Effect": [
         [
@@ -61,10 +61,10 @@
               9,
               {
                 "Percentage": 50,
-                "Name": "Vulnerability",
+                "Name": "취약",
                 "Icon": "Status/Icons/IconVulnerability",
                 "AudioClip": "",
-                "Description": "Recive 50% more damage from attacks.\r",
+                "Description": "공격으로부터 50%의 추가 피해를 받습니다.\r",
                 "BuffType": 2
               }
             ],

@@ -124,7 +124,7 @@ namespace MainScene
             GameObject textGo = new GameObject("HintText");
             textGo.transform.SetParent(panelGo.transform, false);
             hintText = textGo.AddComponent<Text>();
-            hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            hintText.font = Resources.Load<Font>("BlackAndWhitePicture-Regular");
             hintText.fontSize = 35;
             hintText.alignment = TextAnchor.MiddleCenter;
             hintText.color = Color.white;
@@ -166,7 +166,7 @@ namespace MainScene
             GameObject txtGo = new GameObject("Text");
             txtGo.transform.SetParent(btnGo.transform, false);
             Text txt = txtGo.AddComponent<Text>();
-            txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            txt.font = Resources.Load<Font>("BlackAndWhitePicture-Regular");
             txt.text = textStr;
             txt.fontSize = 28;
             txt.alignment = TextAnchor.MiddleCenter;
@@ -309,11 +309,18 @@ namespace MainScene
                 if (cancelBtnGo != null) cancelBtnGo.SetActive(false);
                 
                 // 라운드에 맞는 랜덤 보상 3개 뽑기
-                int loopCount = RoomExplorationManager.Instance != null ? RoomExplorationManager.Instance.currentLoopCount : 0;
+                var config = OptionMenu.Options.LoadConfigData();
+                int battleCount = config != null ? config.BattleCount : 0;
+                int rewardRound = 0;
+                if (battleCount == 1) rewardRound = 3;
+                else if (battleCount >= 2) rewardRound = 6;
                 
                 if (RewardPoolManager.Instance != null)
                 {
-                    currentChoices = RewardPoolManager.Instance.GetRandomRewards(loopCount, 3);
+                    // 이번 방에서 이미 스탯 보상을 받았으면 스탯 선택지를 제외하고 뽑음
+                    bool excludeStats = RoomExplorationManager.Instance != null &&
+                                       RoomExplorationManager.Instance.statRewardGivenThisRoom;
+                    currentChoices = RewardPoolManager.Instance.GetRandomRewards(rewardRound, 3, excludeStats);
 
                     if (cardRewardBtnGo != null && currentChoices.Count > 0)
                     {
@@ -343,9 +350,10 @@ namespace MainScene
 
         private void OnBookChoiceClicked(int index)
         {
-            CloseHintUI();
-
             if (currentChoices == null || index < 0 || index >= currentChoices.Count) return;
+
+            // 보상 선택 시 즉시 힌트창 닫기 (커서는 보상창이 관리하게 둠)
+            if (hintCanvas != null) hintCanvas.gameObject.SetActive(false);
             
             RewardOption selectedReward = currentChoices[index];
             string choiceId = selectedReward.RewardId;
@@ -360,6 +368,15 @@ namespace MainScene
             if (RoomExplorationManager.Instance != null)
             {
                 RoomExplorationManager.Instance.currentRoomInteractions++;
+                
+                // 스탯 보상 수령 여부 플래그 - STR/INT/MEN/ALL_STAT 포함이면 표시
+                string choiceIdForStatCheck = selectedReward.RewardId;
+                if (choiceIdForStatCheck.StartsWith("STR_") || choiceIdForStatCheck.StartsWith("INT_") ||
+                    choiceIdForStatCheck.StartsWith("MEN_") || choiceIdForStatCheck.StartsWith("ALL_STAT"))
+                {
+                    RoomExplorationManager.Instance.statRewardGivenThisRoom = true;
+                }
+                
                 Debug.Log($"[PlayerInteraction] 선택한 보상: {selectedReward.RewardName}. (현재 보상 획득 횟수: {RoomExplorationManager.Instance.currentRoomInteractions}/5)");
             }
 
@@ -395,7 +412,19 @@ namespace MainScene
                     if (int.TryParse(parts[i+1], out int amount))
                     {
                         var config = OptionMenu.Options.LoadConfigData();
-                        config.Soul += amount;
+                        
+                        // 배틀씬의 StatsFormula.CalculateSoul()과 동일한 정신력 보너스 적용
+                        int bonusMental = PlayerPrefs.GetInt("Bonus_MEN", 0);
+                        int actualAmount = amount;
+                        if (amount != 0)
+                        {
+                            actualAmount = amount + bonusMental;
+                            // 잃을 때(amount < 0) 이득이 생겨서 양수로 바뀌는 것은 방지 (0으로 고정)
+                            if (amount < 0) actualAmount = Mathf.Min(0, actualAmount);
+                        }
+                        
+                        config.Soul += actualAmount;
+                        Debug.Log($"[PlayerInteraction] 소울 변동: 원래={amount}, 정신력보너스={bonusMental}, 실제적용={actualAmount}");
                         OptionMenu.Options.SaveConfigData(config);
                         Debug.Log($"[PlayerInteraction] 소울 보상 적용 완료. 현재 소울: {config.Soul}");
                         
@@ -432,6 +461,19 @@ namespace MainScene
                         Debug.Log($"[PlayerInteraction] 영구 스탯 보너스 적용: {parts[i]} +{amount}");
                     }
                 }
+                else if (parts[i] == "ALL" && i + 2 < parts.Length && parts[i+1] == "STAT")
+                {
+                    if (int.TryParse(parts[i+2], out int amount))
+                    {
+                        string[] statNames = { "STR", "INT", "MEN" };
+                        foreach (var stat in statNames)
+                        {
+                            int currentStat = PlayerPrefs.GetInt("Bonus_" + stat, 0);
+                            PlayerPrefs.SetInt("Bonus_" + stat, currentStat + amount);
+                            Debug.Log($"[PlayerInteraction] 영구 스탯 보너스 적용: {stat} +{amount}");
+                        }
+                    }
+                }
                 else if (parts[i] == "NEXT" && i + 2 < parts.Length)
                 {
                     string buffType = parts[i+1];
@@ -444,21 +486,46 @@ namespace MainScene
                 }
             }
 
+            // 보상 적용 직후 메인씬 HUD 즉시 갱신 (버프 상태이콘 즉시 업데이트 등)
+            if (MainSceneHUD.Instance != null) MainSceneHUD.Instance.UpdateUI();
+
             // 2. UI 보상을 큐에 삽입
-            if (choiceId.Contains("REMOVE"))
+            for (int i = 0; i < parts.Length; i++)
             {
-                int count = choiceId.Contains("REMOVE_2") ? 2 : 1;
-                rewardQueue.Enqueue(new RewardAction { type = "REMOVE", count = count });
-            }
-            if (choiceId.Contains("UPGRADE"))
-            {
-                int count = choiceId.Contains("UPGRADE_2") ? 2 : 1;
-                rewardQueue.Enqueue(new RewardAction { type = "UPGRADE", count = count });
-            }
-            if (choiceId.Contains("CARD")) 
-            {
-                int count = choiceId.Contains("CARD_2") ? 2 : 1;
-                rewardQueue.Enqueue(new RewardAction { type = "CARD", count = count });
+                if (parts[i] == "REMOVE")
+                {
+                    int count = 1;
+                    if (i + 1 < parts.Length && int.TryParse(parts[i+1], out int rCount))
+                    {
+                        count = rCount;
+                    }
+                    rewardQueue.Enqueue(new RewardAction { type = "REMOVE", count = count });
+                }
+                else if (parts[i] == "UPGRADE")
+                {
+                    int count = 1;
+                    if (i + 1 < parts.Length && int.TryParse(parts[i+1], out int uCount))
+                    {
+                        count = uCount;
+                    }
+                    rewardQueue.Enqueue(new RewardAction { type = "UPGRADE", count = count });
+                }
+                else if (parts[i] == "CARD")
+                {
+                    // CARD_REMOVE, CARD_REMOVE_2, CARD_UPGRADE, CARD_UPGRADE_2 등에서 CARD는 접두사일 뿐 카드 보상이 아닙니다.
+                    // 따라서 다음 부분이 REMOVE나 UPGRADE인 경우는 카드 보상으로 처리하지 않습니다.
+                    if (i + 1 < parts.Length && (parts[i+1] == "REMOVE" || parts[i+1] == "UPGRADE"))
+                    {
+                        continue;
+                    }
+
+                    int count = 1;
+                    if (i + 1 < parts.Length && int.TryParse(parts[i+1], out int cCount))
+                    {
+                        count = cCount;
+                    }
+                    rewardQueue.Enqueue(new RewardAction { type = "CARD", count = count });
+                }
             }
 
             // 첫 번째 보상 프로세스 시작
@@ -572,9 +639,12 @@ namespace MainScene
             if (hintCanvas != null) hintCanvas.gameObject.SetActive(false);
             currentDoor = null;
 
-            // 다시 카메라 회전 등을 위해 커서를 잠급니다.
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // 보상 큐가 비어있을 때만 커서를 다시 잠급니다.
+            if (rewardQueue.Count == 0)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
         private void TriggerGameOver()
         {

@@ -22,6 +22,10 @@ namespace Units.General
 		public Soul Soul;
 		public int SoulStackThreshold = 10;
 
+		[Header("Permanent Bonuses")]
+		public int BonusStrength = 0;
+		public int BonusMental = 0;
+
 		[Space(10)]
 		public StatusContainer StatusContainer = new StatusContainer();
 

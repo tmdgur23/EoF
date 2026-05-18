@@ -67,8 +67,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Purified!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 95b4f93fd16feba449f7759d0e285e3f, type: 2}
-  m_sharedMaterial: {fileID: 12984834795823075, guid: 95b4f93fd16feba449f7759d0e285e3f,
+  m_fontAsset: {fileID: 11400000, guid: 0fb6e98fb4ba4904982c7cff99d43f98, type: 2}
+  m_sharedMaterial: {fileID: 4504527474807354535, guid: 0fb6e98fb4ba4904982c7cff99d43f98,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -1127,8 +1127,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: The source of the corruption is destroyed, thank the gods!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8c0d0d301eba36943ad997014a11be95, type: 2}
-  m_sharedMaterial: {fileID: 4896254541122339378, guid: 8c0d0d301eba36943ad997014a11be95,
+  m_fontAsset: {fileID: 11400000, guid: 0fb6e98fb4ba4904982c7cff99d43f98, type: 2}
+  m_sharedMaterial: {fileID: 4504527474807354535, guid: 0fb6e98fb4ba4904982c7cff99d43f98,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}

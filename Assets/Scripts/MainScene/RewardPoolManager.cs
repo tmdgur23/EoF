@@ -42,13 +42,13 @@ namespace MainScene
                 new RewardOption("카드 보상", "CARD_1"),
                 new RewardOption("체력회복 +4", "HP_4"),
                 new RewardOption("최대체력 +2", "MAXHP_2"),
-                new RewardOption("Soul +2", "SOUL_3"),
+                new RewardOption("Soul +2", "SOUL_2"),
                 new RewardOption("다음 전투 방어도 +3", "NEXT_DEF_3"),
                 new RewardOption("다음 드로우 +1", "NEXT_DRAW_1"),
-                new RewardOption("다음 주사위 +1", "NEXT_DICE_1"),
-                new RewardOption("체력 -2, 카드 보상", "HP_-2_CARD_1"),
-                new RewardOption("체력 -2, 아무 능력치 +1", "HP_-1_STAT_1"),
-                new RewardOption("Soul -1, 카드 보상", "SOUL_-1_CARD_1"),
+                new RewardOption("다음 전투 적 취약 2", "NEXT_VUL_2"),
+                new RewardOption("체력 -5, 카드 보상", "HP_-5_CARD_1"),
+                new RewardOption("체력 -2", "HP_-2"),
+                new RewardOption("Soul -3, 카드 보상", "SOUL_-3_CARD_1"),
                 new RewardOption("변화없음", "NOTHING")
             };
 
@@ -66,7 +66,7 @@ namespace MainScene
                 new RewardOption("Soul +5", "SOUL_5"),
                 new RewardOption("다음 전투 드로우 +1", "NEXT_DRAW_1"),
                 new RewardOption("다음 전투 방어도 +5", "NEXT_DEF_5"),
-                new RewardOption("다음 전투 주사위 +1", "NEXT_DICE_1"),
+                new RewardOption("다음 전투 적 취약 2", "NEXT_VUL_2"),
                 new RewardOption("체력 -3", "HP_-3"),
                 new RewardOption("체력 -4, Soul +3", "HP_-4_SOUL_3"),
                 new RewardOption("체력 -5, 카드 보상", "HP_-5_CARD_1"),
@@ -85,11 +85,11 @@ namespace MainScene
                 new RewardOption("카드 제거 2회", "CARD_REMOVE_2"),
                 new RewardOption("카드 강화 2회", "CARD_UPGRADE_2"),
                 new RewardOption("체력회복 +8", "HP_8"),
-                new RewardOption("최대체력 +6", "HP_6"),
+                new RewardOption("최대체력 +6", "MAXHP_6"),
                 new RewardOption("Soul +6", "SOUL_6"),
                 new RewardOption("다음 전투 드로우 +2", "NEXT_DRAW_2"),
                 new RewardOption("다음 전투 방어도 +8", "NEXT_DEF_8"),
-                new RewardOption("다음 전투 주사위 +2", "NEXT_DICE_2"),
+                new RewardOption("다음 전투 적 취약 4", "NEXT_VUL_4"),
                 new RewardOption("체력 -5", "HP_-5"),
                 new RewardOption("체력 -7, 카드 보상", "HP_-7_CARD"),
                 new RewardOption("Soul -3, 카드 2장 보상", "SOUL_-3_CARD_2"),
@@ -98,17 +98,32 @@ namespace MainScene
             };
         }
 
-        public List<RewardOption> GetRandomRewards(int round, int count = 3)
+        public List<RewardOption> GetRandomRewards(int round, int count = 3, bool excludeStatRewards = false)
         {
             List<RewardOption> sourcePool;
             
-            // round는 0, 1, 2로 들어온다고 가정합니다. (currentLoopCount)
-            if (round <= 0) sourcePool = round1Pool;
-            else if (round == 1) sourcePool = round2Pool;
+            // loopCount(round)는 0부터 시작. 
+            // 0, 1, 2 루프까지는 Round 1 보상 (첫 번째 모니터 단계)
+            if (round <= 2) sourcePool = round1Pool;
+            // 3, 4, 5 루프까지는 Round 2 보상
+            else if (round <= 5) sourcePool = round2Pool;
+            // 6 루프 이상부터는 Round 3 보상
             else sourcePool = round3Pool;
 
             // 원본 풀을 복사해서 섞습니다 (Fisher-Yates Shuffle)
             List<RewardOption> temp = new List<RewardOption>(sourcePool);
+            
+            // 스탯 보상을 제외해야 하는 경우 STR/INT/MEN/ALL_STAT 포함 보상을 풀에서 제거
+            if (excludeStatRewards)
+            {
+                temp.RemoveAll(r =>
+                    r.RewardId.StartsWith("STR_") ||
+                    r.RewardId.StartsWith("INT_") ||
+                    r.RewardId.StartsWith("MEN_") ||
+                    r.RewardId.StartsWith("ALL_STAT")
+                );
+            }
+            
             for (int i = 0; i < temp.Count; i++)
             {
                 int rnd = Random.Range(0, temp.Count);

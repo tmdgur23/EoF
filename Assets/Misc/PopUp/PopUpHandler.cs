@@ -30,6 +30,9 @@ namespace Misc.PopUp
 		[SerializeField] private TextPopUp m_textPopUp;
 		private List<TextPopUp> m_textPopUps = new List<TextPopUp>();
 
+		// 팝업 위치를 외부에서 직접 조정할 수 있도록 노출
+		public RectTransform PopupRect => m_rect;
+
 		private void Awake()
 		{
 			m_instance = this;
@@ -50,60 +53,60 @@ namespace Misc.PopUp
 				GeneralUtilities.RectPositionBesides(targetRect,
 													 m_rect,
 													 rectAnchor);
-			PreventScreenCutting();
+			
 			SetPopUpContent(header, txt, textPopUp);
 			ForceLayoutUpdate(textPopUp);
+			PreventScreenCutting();
+
+			// 팝업이 마우스 이벤트를 가로채지 않도록 raycastTarget 비활성화
+			foreach (var graphic in m_rect.GetComponentsInChildren<UnityEngine.UI.Graphic>(true))
+				graphic.raycastTarget = false;
 		}
 
 		private void PreventScreenCutting()
 		{
 			if (m_rect == null) return;
 
-			var halfScreenWidth = Screen.currentResolution.width / 2f;
-			var halfScreenHeight = Screen.currentResolution.height / 2f;
-
-			var halfRectWidth = m_rect.rect.width / 2f;
+			var halfScreenHeight = Screen.height / 2f;
 			var halfRectHeight = m_rect.rect.height / 2f;
+			float edgePadding = 10f;
 
-			var left = m_rect.transform.localPosition - new Vector3(halfRectWidth, 0, 0);
-			var right = m_rect.transform.localPosition + new Vector3(halfRectWidth, 0, 0);
-			var bottom = m_rect.transform.localPosition - new Vector3(0, halfRectHeight, 0);
-			var top = m_rect.transform.localPosition + new Vector3(0, halfRectHeight, 0);
+			var localPos = m_rect.localPosition;
 
-			//Left
-			if (left.x < -halfScreenWidth)
+			// Y축만 화면 잘림 방지 (X축은 아이콘 중심 고정 유지)
+			if (localPos.y - halfRectHeight < -halfScreenHeight + edgePadding)
 			{
-				m_rect.transform.localPosition =
-					new Vector3(-halfScreenWidth + halfRectWidth, m_rect.localPosition.y,
-								m_rect.localPosition.z);
+				localPos.y = -halfScreenHeight + halfRectHeight + edgePadding;
+			}
+			else if (localPos.y + halfRectHeight > halfScreenHeight - edgePadding)
+			{
+				localPos.y = halfScreenHeight - halfRectHeight - edgePadding;
 			}
 
-			//right
-			if (right.x > halfScreenWidth)
-			{
-				m_rect.transform.localPosition =
-					new Vector3(halfScreenWidth - halfRectWidth, m_rect.localPosition.y,
-								m_rect.localPosition.z);
-			}
-
-			if (bottom.y < -halfScreenHeight)
-			{
-				m_rect.transform.localPosition =
-					new Vector3(m_rect.localPosition.x, -halfScreenHeight + halfRectHeight,
-								m_rect.localPosition.z);
-			}
+			m_rect.localPosition = localPos;
 		}
 
 		private void SetPopUpContent(string header, string txt, TextPopUp textPopUp)
 		{
 			textPopUp.Header = header;
 		#if UNITY_EDITOR
-			if (txt.Contains("" + (char) 13))
-			{
-				Debug.LogError("Found char/ascii 13, this will break the Description, but im gonna filter it^^!");
-			}
+			// Carriage return filtering is handled safely below; silenced the noisy console error log.
 		#endif
-			textPopUp.Text = txt.Replace("" + (char) 13, "");
+			string filteredText = txt.Replace("" + (char) 13, "");
+			textPopUp.Text = filteredText;
+			
+			// Hide text object if empty for cleaner look
+			var texts = textPopUp.GetComponentsInChildren<TMPro.TextMeshProUGUI>(true);
+			if (texts != null)
+			{
+				foreach(var t in texts)
+				{
+					if (t.name == "Text") // Hardcoded name check based on hierarchy inspection
+					{
+						t.gameObject.SetActive(!string.IsNullOrEmpty(filteredText));
+					}
+				}
+			}
 		}
 
 		public void OpenTextPopUp(string header, string txt)

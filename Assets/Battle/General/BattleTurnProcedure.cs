@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using Battle.GameStates;
 using Misc;
@@ -152,10 +152,10 @@ namespace Battle.General
 
 		private void OnPlayerWon()
 		{
+			Save();
 			PlayerWon?.Invoke();
 			EventLog.Add(new PlayerWon());
 			EventLog.Clear();
-			Save();
 		}
 
 		private void Save()

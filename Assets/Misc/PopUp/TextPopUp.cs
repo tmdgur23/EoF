@@ -8,6 +8,22 @@ namespace Misc.PopUp {
 		[SerializeField] private TextMeshProUGUI m_popUpDisplay = null;
 		private RectTransform m_rectTransform;
 
+		private void Start()
+		{
+			string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+			if (sceneName.Contains("Battle"))
+			{
+				if (m_headerDisplay != null)
+				{
+					m_headerDisplay.fontSize *= 1.4f;
+				}
+				if (m_popUpDisplay != null)
+				{
+					m_popUpDisplay.fontSize *= 1.4f;
+				}
+			}
+		}
+
 		public RectTransform RectTransform
 		{
 			get
