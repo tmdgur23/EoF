@@ -54,6 +54,15 @@ namespace Battle.General
 							}
 							winMenu.name = "WinMenu";
 							
+							var rect = winMenu.GetComponent<RectTransform>();
+							if (rect != null)
+							{
+								rect.anchorMin = Vector2.zero;
+								rect.anchorMax = Vector2.one;
+								rect.anchoredPosition = Vector2.zero;
+								rect.sizeDelta = Vector2.zero;
+							}
+							
 							// Hook up buttons
 							var buttons = winMenu.GetComponentsInChildren<UnityEngine.UI.Button>(true);
 							foreach (var btn in buttons)
@@ -61,7 +70,7 @@ namespace Battle.General
 								string btnName = btn.name.ToLower();
 								if (btnName.Contains("continue") || btnName.Contains("next") || btnName.Contains("confirm") || btnName.Contains("menu"))
 								{
-									btn.onClick.AddListener(OnContinueButtonClicked);
+									btn.onClick.AddListener(OnWinMenuConfirmClicked);
 								}
 							}
 						}
@@ -105,6 +114,15 @@ namespace Battle.General
 							loseMenu = Instantiate(prefab);
 						}
 						loseMenu.name = "LooseScreen";
+
+						var rect = loseMenu.GetComponent<RectTransform>();
+						if (rect != null)
+						{
+							rect.anchorMin = Vector2.zero;
+							rect.anchorMax = Vector2.one;
+							rect.anchoredPosition = Vector2.zero;
+							rect.sizeDelta = Vector2.zero;
+						}
 
 						// Hook up buttons on Lose Menu (Specifically targeting Get resurrected / restart)
 						var buttons = loseMenu.GetComponentsInChildren<UnityEngine.UI.Button>(true);
@@ -157,6 +175,13 @@ namespace Battle.General
 			{
 				UnityEngine.SceneManagement.SceneManager.LoadScene("Main");
 			}
+		}
+
+		public void OnWinMenuConfirmClicked()
+		{
+			Options.ResetConfigData();
+			PlayerPrefs.SetInt("MainScene_Rewards", 0);
+			UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
 		}
 
 		public void OnQuitToMenuButtonClicked()

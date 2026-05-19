@@ -9,7 +9,7 @@ namespace Misc
 	{
 		public void LoadMainMenu()
 		{
-			LoadingScreen.LoadScene(1);
+			LoadingScreen.LoadScene(0);
 		}
 
 		public void ReloadSceneWithMap()
