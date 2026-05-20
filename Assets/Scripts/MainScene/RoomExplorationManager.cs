@@ -133,6 +133,13 @@ namespace MainScene
                 }
                 
                 currentRoomIndex = -1; // 방 밖으로 나왔음을 표시
+                
+                // 루프마다 방의 컨셉이 중복 없이 새로 바뀌도록 리셔플 트리거
+                if (RoomAttributeManager.Instance != null)
+                {
+                    RoomAttributeManager.Instance.AssignRandomAttributes();
+                }
+
                 // 다시 초기화
                 ResetAllDoors();
             }

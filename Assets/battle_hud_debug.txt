@@ -4,25 +4,25 @@ Total Canvases in scene: 14
 - Canvas Name: AnnouncementParent, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
 - Canvas Name: IntentionParent, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
 - Canvas Name: Damage_DefaultParent, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
-- Canvas Name: VFXHandler, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
 - Canvas Name: WinMenu, activeInHierarchy: False, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 10
+- Canvas Name: VFXHandler, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
+- Canvas Name: HUD, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 4
 - Canvas Name: OptionsPopUpInGame, activeInHierarchy: False, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 0
 - Canvas Name: IngamOptions, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 10
 - Canvas Name: LooseScreen, activeInHierarchy: False, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 10
-- Canvas Name: PopUpHandler, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 5
-- Canvas Name: HUD, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 4
-- Canvas Name: OverlayCanvas, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
 - Canvas Name: BattleZone, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 0
+- Canvas Name: PopUpHandler, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 5
+- Canvas Name: OverlayCanvas, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 8
 - Canvas Name: RootCanvas, activeInHierarchy: True, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 0
 StatHUD name: StatHUD, activeSelf: True, activeInHierarchy: True
 Parent: RootCanvas
 Parent Canvas: RootCanvas, enabled: True, renderMode: ScreenSpaceOverlay, sortingOrder: 0
 RectTransform - anchorMin: (0.00, 1.00), anchorMax: (0.00, 1.00), pivot: (0.50, 1.00)
 RectTransform - anchoredPosition: (115.00, -250.00), sizeDelta: (200.00, 50.00)
-Transform - localScale: (1.35, 1.35, 1.35), position: (70.38, 508.00, 0.00)
-Child [0]: STR_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (40.64, 487.34, 0.00)
+Transform - localScale: (1.35, 1.35, 1.35), position: (66.97, 483.41, 0.00)
+Child [0]: STR_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (38.67, 463.76, 0.00)
 Child [0] Image - enabled: True, color: RGBA(1.000, 1.000, 1.000, 1.000), sprite: Knob
-Child [1]: INT_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (70.38, 487.34, 0.00)
+Child [1]: INT_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (66.97, 463.76, 0.00)
 Child [1] Image - enabled: True, color: RGBA(1.000, 1.000, 1.000, 1.000), sprite: Knob
-Child [2]: MEN_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (100.12, 487.34, 0.00)
+Child [2]: MEN_Stat, activeSelf: True, activeInHierarchy: True, localScale: (1.00, 1.00, 1.00), position: (95.27, 463.76, 0.00)
 Child [2] Image - enabled: True, color: RGBA(1.000, 1.000, 1.000, 1.000), sprite: Knob

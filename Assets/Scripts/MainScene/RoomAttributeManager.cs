@@ -48,14 +48,30 @@ namespace MainScene
             AssignRandomAttributes();
         }
 
-        private void AssignRandomAttributes()
+        public void AssignRandomAttributes()
         {
             RoomConceptType[] types = (RoomConceptType[])System.Enum.GetValues(typeof(RoomConceptType));
+            
+            // Fisher-Yates shuffle to guarantee unique, non-repeating concepts
+            List<RoomConceptType> shuffledTypes = new List<RoomConceptType>(types);
+            for (int i = shuffledTypes.Count - 1; i > 0; i--)
+            {
+                int r = Random.Range(0, i + 1);
+                RoomConceptType temp = shuffledTypes[i];
+                shuffledTypes[i] = shuffledTypes[r];
+                shuffledTypes[r] = temp;
+            }
+
+            roomConcepts.Clear();
             for (int i = 1; i <= 20; i++)
             {
-                RoomConceptType randomType = types[Random.Range(0, types.Length)];
-                roomConcepts[i] = randomType;
-                Debug.Log($"Room {i} assigned with concept: {randomType}");
+                // Assign a unique concept from the shuffled list.
+                // Since there are 9 unique types, rooms 1 to 6 (the active doors in the hallway)
+                // are guaranteed to have 100% unique, non-overlapping concepts.
+                int index = (i - 1) % shuffledTypes.Count;
+                RoomConceptType uniqueType = shuffledTypes[index];
+                roomConcepts[i] = uniqueType;
+                Debug.Log($"Room {i} assigned with concept: {uniqueType}");
             }
         }
 
