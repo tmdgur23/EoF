@@ -22,4 +22,9 @@ MemoryCaptures/
 *.unitypackage
 Assets.zip
 Assets.zip
-Assets/Scenes/Main/LightingData.asset
+
+# Portfolio & Walkthrough files
+Assets/portfolio_analysis.md
+Assets/portfolio_analysis.md.meta
+Assets/walkthrough.md
+Assets/walkthrough.md.meta
